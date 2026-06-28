@@ -34,7 +34,7 @@ function cleanFilter(value?: string) {
   return value && value.trim() ? value.trim() : undefined;
 }
 
-export async function getOrders(filters: OrderFilters = {}, limit = 200): Promise<DataResult<Order[]>> {
+export async function getOrders(filters: OrderFilters = {}, limit = 200, offset = 0): Promise<DataResult<Order[]>> {
   if (!isSupabaseConfigured()) return emptyResult([]);
 
   const supabase = getSupabaseAdminClient();
@@ -43,7 +43,7 @@ export async function getOrders(filters: OrderFilters = {}, limit = 200): Promis
     .select("*")
     .order("order_date", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .range(offset, offset + limit - 1);
 
   const country = cleanFilter(filters.country);
   const productLine = cleanFilter(filters.productLine);
@@ -241,12 +241,28 @@ export type DashboardData = {
   monthlySales: Array<{ month: string; sales: number; quantity: number }>;
   countrySales: Array<{ country: string; sales: number; quantity: number }>;
   recentLeads: DailyLead[];
-  followCustomers: Customer[];
+  followCustomers: Pick<
+    Customer,
+    "id" | "name" | "country" | "total_sales_rmb" | "last_order_date" | "days_since_last_order" | "follow_priority" | "follow_suggestion"
+  >[];
   pendingShipping: {
     count: number;
     salesTotal: number;
     quantityTotal: number;
-    orders: Order[];
+    orders: Pick<
+      Order,
+      | "id"
+      | "order_no"
+      | "order_date"
+      | "customer_name"
+      | "country"
+      | "product_line"
+      | "quantity"
+      | "sales_amount_rmb"
+      | "sales_amount_effective_rmb"
+      | "shipping_status"
+      | "shipping_method"
+    >[];
   };
 };
 
@@ -278,7 +294,11 @@ export async function getDashboardData(range: DashboardRange = "all"): Promise<D
     .from("orders")
     .select("order_date,country,product_line,quantity,sales_amount_effective_rmb,is_refund_or_cancelled")
     .eq("is_refund_or_cancelled", false);
-  let leadsQuery = supabase.from("daily_leads").select("*").order("stat_date", { ascending: false }).limit(90);
+  let leadsQuery = supabase
+    .from("daily_leads")
+    .select("stat_date,total_increase,handbag_group_increase,backpack_group_increase")
+    .order("stat_date", { ascending: false })
+    .limit(90);
 
   if (startDate) {
     ordersQuery = ordersQuery.gte("order_date", startDate);
@@ -290,13 +310,13 @@ export async function getDashboardData(range: DashboardRange = "all"): Promise<D
     leadsQuery,
     supabase
       .from("customers")
-      .select("*")
+      .select("id,name,country,total_sales_rmb,last_order_date,days_since_last_order,follow_priority,follow_suggestion")
       .in("follow_priority", ["优先跟进", "可跟进"])
       .order("total_sales_rmb", { ascending: false })
       .limit(10),
     supabase
       .from("orders")
-      .select("*")
+      .select("id,order_no,order_date,customer_name,country,product_line,quantity,sales_amount_rmb,sales_amount_effective_rmb,shipping_status,shipping_method")
       .eq("is_refund_or_cancelled", false)
       .in("shipping_status", [...PENDING_SHIPPING_STATUSES])
       .order("order_date", { ascending: true })
@@ -315,8 +335,8 @@ export async function getDashboardData(range: DashboardRange = "all"): Promise<D
     "order_date" | "country" | "product_line" | "quantity" | "sales_amount_effective_rmb" | "is_refund_or_cancelled"
   >[];
   const recentLeads = (leadsResult.data ?? []) as DailyLead[];
-  const followCustomers = (customersResult.data ?? []) as Customer[];
-  const pendingOrders = (pendingShippingResult.data ?? []) as Order[];
+  const followCustomers = (customersResult.data ?? []) as DashboardData["followCustomers"];
+  const pendingOrders = (pendingShippingResult.data ?? []) as DashboardData["pendingShipping"]["orders"];
 
   const monthlyMap = new Map<string, { month: string; sales: number; quantity: number }>();
   const countryMap = new Map<string, { country: string; sales: number; quantity: number }>();

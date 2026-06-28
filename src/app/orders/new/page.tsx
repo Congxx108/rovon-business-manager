@@ -35,9 +35,9 @@ export default async function NewOrderPage({
         </div>
       ) : null}
 
-      <form action={createOrder} className="max-w-4xl space-y-5">
+      <form action={createOrder} className="max-w-none space-y-4">
         <FormSection title="基础信息" description="客户名和联系方式至少填写一个，方便后续客户统计和跟进。">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={todayString()} />
             <FormField label="订单编号" name="order_no" placeholder="不填则自动生成" />
             <FormField label="客户名" name="customer_name" placeholder="客户名或联系方式至少填一个" />
@@ -47,7 +47,7 @@ export default async function NewOrderPage({
         </FormSection>
 
         <FormSection title="产品与金额">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-3">
             <FormField label="产品线" name="product_line" required defaultValue="女包" />
             <FormField label="数量" name="quantity" type="number" required defaultValue={0} min={0} />
             <FormField label="销售额RMB" name="sales_amount_rmb" type="number" required defaultValue={0} min={0} step="0.01" />
@@ -55,34 +55,36 @@ export default async function NewOrderPage({
         </FormSection>
 
         <FormSection title="状态与备注" description="取消/退款订单会保留记录，但不计入销售、数量和客户统计。">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-3">
             <FormField label="订单状态" name="order_status" defaultValue="已成交" />
             <FormField label="付款状态" name="payment_status" defaultValue="已付全款" />
           </div>
-          <label className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-700">
+          <label className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
             <input name="is_refund_or_cancelled" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
             是否取消/退款
           </label>
-          <div className="mt-4">
-          <FormField label="备注" name="remark" textarea />
+          <div className="mt-3">
+          <FormField label="备注" name="remark" textarea rows={3} />
           </div>
         </FormSection>
 
         <FormSection title="发货信息" description="订单默认未发货。已发货或部分发货时，建议填写物流方式、公司、单号或发货日期，避免重复发货或漏发。">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SelectField label="发货状态" name="shipping_status" defaultValue="未发货" options={SHIPPING_STATUSES} />
             <SelectField label="物流方式" name="shipping_method" options={SHIPPING_METHODS} emptyLabel="未填写" />
             <FormField label="物流/快运公司" name="shipping_company" placeholder="例如 安能 / 本地物流" />
             <FormField label="物流单号/货运单号" name="tracking_no" />
             <FormField label="发货日期" name="shipping_date" type="date" />
           </div>
-          <div className="mt-4">
-            <FormField label="发货备注" name="shipping_remark" textarea placeholder="例如 发了几件、分几批、货站信息、本地物流联系人" />
+          <div className="mt-3">
+            <FormField label="发货备注" name="shipping_remark" textarea rows={3} placeholder="例如 发了几件、分几批、货站信息、本地物流联系人" />
           </div>
         </FormSection>
 
-        <div className="mt-6 flex justify-end">
-          <Button type="submit">保存订单</Button>
+        <div className="sticky bottom-0 z-10 -mx-2 mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/95 px-2 py-3 backdrop-blur">
+          <Button href="/orders" variant="secondary">返回订单列表</Button>
+          <Button type="submit" name="after_save" value="orders">保存订单</Button>
+          <Button type="submit" name="after_save" value="new">保存并继续新增</Button>
         </div>
       </form>
     </AppShell>

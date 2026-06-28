@@ -16,7 +16,7 @@ export default async function CustomersPage({
   searchParams: Promise<{ refreshed?: string; followPriority?: string; valueLevel?: string; country?: string; search?: string }>;
 }) {
   const { refreshed, ...filters } = await searchParams;
-  const [result, filterOptions, exportResult] = await Promise.all([getCustomers(filters), getCustomerFilterOptions(), getCustomers({}, 10000)]);
+  const [result, filterOptions, exportResult] = await Promise.all([getCustomers(filters, 100), getCustomerFilterOptions(), getCustomers({}, 10000)]);
   const exportRows = exportResult.data.map((customer) => ({
     客户名: customer.name,
     联系方式: customer.contact ?? "",
@@ -73,7 +73,23 @@ export default async function CustomersPage({
       </form>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1380px] text-left text-sm">
+        <table className="w-full min-w-[1600px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+          <colgroup>
+            <col className="w-[180px]" />
+            <col className="w-[160px]" />
+            <col className="w-[100px]" />
+            <col className="w-[90px]" />
+            <col className="w-[110px]" />
+            <col className="w-[90px]" />
+            <col className="w-[110px]" />
+            <col className="w-[120px]" />
+            <col className="w-[90px]" />
+            <col className="w-[100px]" />
+            <col className="w-[110px]" />
+            <col className="w-[110px]" />
+            <col className="w-[190px]" />
+            <col className="w-[180px]" />
+          </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
               <th className="px-4 py-3 font-medium">客户名</th>
@@ -96,13 +112,13 @@ export default async function CustomersPage({
             {result.data.length ? (
               result.data.map((customer) => (
                 <tr key={customer.id} className={tableRowClassName}>
-                  <td className="px-4 py-3 font-medium">
+                  <td className="truncate px-4 py-3 font-medium" title={customer.name}>
                     <Link href={`/customers/${customer.id}`} className="underline underline-offset-4">
                       {customer.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3">{customer.contact ?? "-"}</td>
-                  <td className="px-4 py-3">{customer.country ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={customer.contact ?? ""}>{customer.contact ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={customer.country ?? ""}>{customer.country ?? "-"}</td>
                   <td className="px-4 py-3">{formatDate(customer.first_order_date)}</td>
                   <td className="px-4 py-3">{formatDate(customer.last_order_date)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(customer.total_orders)}</td>
@@ -112,7 +128,7 @@ export default async function CustomersPage({
                   <td className="px-4 py-3">{customer.customer_value_level}</td>
                   <td className="px-4 py-3">{customer.repurchase_potential}</td>
                   <td className="px-4 py-3"><PriorityBadge value={customer.follow_priority} /></td>
-                  <td className="px-4 py-3 text-slate-600">{customer.follow_suggestion ?? "-"}</td>
+                  <td className="truncate px-4 py-3 text-slate-600" title={customer.follow_suggestion ?? ""}>{customer.follow_suggestion ?? "-"}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-3">
                       <Button href={`/customers/${customer.id}`} variant="secondary" className="h-8 px-3">详情</Button>

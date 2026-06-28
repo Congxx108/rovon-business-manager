@@ -28,8 +28,8 @@ export default async function DailyLeadsPage({
   }>;
 }) {
   const params = await searchParams;
-  const result = await getDailyLeads(10000);
-  const exportRows = result.data.map((lead) => ({
+  const [result, exportResult] = await Promise.all([getDailyLeads(90), getDailyLeads(10000)]);
+  const exportRows = exportResult.data.map((lead) => ({
     日期: lead.stat_date,
     Facebook后台潜在客户: lead.facebook_leads,
     WhatsApp1: lead.whatsapp1,
@@ -86,7 +86,20 @@ export default async function DailyLeadsPage({
       </details>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1180px] text-left text-sm">
+        <table className="w-full min-w-[1240px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+          <colgroup>
+            <col className="w-[100px]" />
+            <col className="w-[170px]" />
+            <col className="w-[110px]" />
+            <col className="w-[110px]" />
+            <col className="w-[110px]" />
+            <col className="w-[110px]" />
+            <col className="w-[130px]" />
+            <col className="w-[110px]" />
+            <col className="w-[150px]" />
+            <col className="w-[140px]" />
+            <col className="w-[90px]" />
+          </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
               <th className="px-4 py-3 font-medium">日期</th>

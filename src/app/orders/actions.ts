@@ -88,6 +88,9 @@ export async function createOrder(formData: FormData) {
   revalidatePath("/customers");
   revalidatePath("/dashboard");
   const warning = needsShippingInfoReminder(shipping.shipping_status, shipping.tracking_no, shipping.shipping_date) ? "&shippingWarning=1" : "";
+  if (textValue(formData, "after_save") === "orders") {
+    redirect(`/orders?saved=1${warning}`);
+  }
   redirect(`/orders/new?saved=1${warning}`);
 }
 

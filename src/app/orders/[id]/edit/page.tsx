@@ -38,9 +38,9 @@ export default async function EditOrderPage({
         />
       ) : null}
 
-      <form action={saveAction} className="max-w-4xl space-y-5">
+      <form action={saveAction} className="max-w-none space-y-4">
         <FormSection title="基础信息">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={order.order_date} />
             <FormField label="订单编号" name="order_no" required defaultValue={order.order_no} />
             <FormField label="客户名" name="customer_name" defaultValue={order.customer_name} />
@@ -50,7 +50,7 @@ export default async function EditOrderPage({
         </FormSection>
 
         <FormSection title="产品与金额">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-3">
             <FormField label="产品线" name="product_line" required defaultValue={order.product_line ?? ""} />
             <FormField label="数量" name="quantity" type="number" required min={0} defaultValue={order.quantity} />
             <FormField label="销售额RMB" name="sales_amount_rmb" type="number" required min={0} step="0.01" defaultValue={order.sales_amount_rmb} />
@@ -58,11 +58,11 @@ export default async function EditOrderPage({
         </FormSection>
 
         <FormSection title="状态与备注">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-3">
             <FormField label="订单状态" name="order_status" defaultValue={order.order_status} />
             <FormField label="付款状态" name="payment_status" defaultValue={order.payment_status} />
           </div>
-          <label className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-700">
+          <label className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
             <input
               name="is_refund_or_cancelled"
               type="checkbox"
@@ -71,32 +71,32 @@ export default async function EditOrderPage({
             />
             是否取消/退款
           </label>
-          <div className="mt-4">
-            <FormField label="备注" name="remark" textarea defaultValue={order.remark ?? ""} />
+          <div className="mt-3">
+            <FormField label="备注" name="remark" textarea rows={3} defaultValue={order.remark ?? ""} />
           </div>
         </FormSection>
 
         <FormSection title="发货信息" description="这里是避免重复发货和漏发货的关键字段。已发货但信息不完整时仍可保存，系统会给出提醒。">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <SelectField label="发货状态" name="shipping_status" defaultValue={order.shipping_status ?? "未发货"} options={SHIPPING_STATUSES} />
             <SelectField label="物流方式" name="shipping_method" defaultValue={order.shipping_method ?? ""} options={SHIPPING_METHODS} emptyLabel="未填写" />
             <FormField label="物流/快运公司" name="shipping_company" defaultValue={order.shipping_company ?? ""} />
             <FormField label="物流单号/货运单号" name="tracking_no" defaultValue={order.tracking_no ?? ""} />
             <FormField label="发货日期" name="shipping_date" type="date" defaultValue={order.shipping_date ?? ""} />
           </div>
-          <div className="mt-4">
-            <FormField label="发货备注" name="shipping_remark" textarea defaultValue={order.shipping_remark ?? ""} />
+          <div className="mt-3">
+            <FormField label="发货备注" name="shipping_remark" textarea rows={3} defaultValue={order.shipping_remark ?? ""} />
           </div>
         </FormSection>
 
-        <div className="mt-6 flex flex-wrap justify-end gap-3">
+        <div className="sticky bottom-0 z-10 -mx-2 mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/95 px-2 py-3 backdrop-blur">
           <Button href="/orders" variant="secondary">返回订单列表</Button>
           <Button type="submit">保存订单</Button>
         </div>
       </form>
 
       {!order.is_refund_or_cancelled ? (
-        <form action={cancelAction} className="mt-5 max-w-4xl rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm">
+        <form action={cancelAction} className="mt-5 max-w-none rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-amber-900">安全处理：不物理删除订单，只标记为取消/退款并刷新客户统计。</p>
             <Button type="submit" variant="warning">标记为取消/退款</Button>

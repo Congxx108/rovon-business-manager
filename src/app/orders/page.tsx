@@ -14,10 +14,25 @@ export const dynamic = "force-dynamic";
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ country?: string; productLine?: string; month?: string; shippingStatus?: string; pendingShipping?: string; search?: string }>;
+  searchParams: Promise<{
+    country?: string;
+    productLine?: string;
+    month?: string;
+    shippingStatus?: string;
+    pendingShipping?: string;
+    search?: string;
+    page?: string;
+  }>;
 }) {
-  const filters = await searchParams;
-  const [result, filterOptions, exportResult] = await Promise.all([getOrders(filters), getOrderFilterOptions(), getOrders({}, 10000)]);
+  const { page, ...filters } = await searchParams;
+  const pageSize = 50;
+  const currentPage = Math.max(1, Number(page ?? "1") || 1);
+  const offset = (currentPage - 1) * pageSize;
+  const [result, filterOptions, exportResult] = await Promise.all([
+    getOrders(filters, pageSize, offset),
+    getOrderFilterOptions(),
+    getOrders({}, 10000),
+  ]);
   const exportRows = exportResult.data.map((order) => ({
     订单日期: order.order_date,
     订单编号: order.order_no,
@@ -38,6 +53,15 @@ export default async function OrdersPage({
     发货备注: order.shipping_remark ?? "",
     备注: order.remark ?? "",
   }));
+  const paginationHref = (targetPage: number) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
+    if (targetPage > 1) params.set("page", String(targetPage));
+    const query = params.toString();
+    return `/orders${query ? `?${query}` : ""}`;
+  };
 
   return (
     <AppShell>
@@ -74,7 +98,24 @@ export default async function OrdersPage({
       </form>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1480px] text-left text-sm">
+        <table className="w-full min-w-[1700px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+          <colgroup>
+            <col className="w-[90px]" />
+            <col className="w-[130px]" />
+            <col className="w-[160px]" />
+            <col className="w-[160px]" />
+            <col className="w-[100px]" />
+            <col className="w-[80px]" />
+            <col className="w-[80px]" />
+            <col className="w-[110px]" />
+            <col className="w-[90px]" />
+            <col className="w-[90px]" />
+            <col className="w-[90px]" />
+            <col className="w-[120px]" />
+            <col className="w-[140px]" />
+            <col className="w-[150px]" />
+            <col className="w-[180px]" />
+          </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
               <th className="px-4 py-3 font-medium">订单日期</th>
@@ -99,18 +140,18 @@ export default async function OrdersPage({
               result.data.map((order) => (
                 <tr key={order.id} className={order.is_refund_or_cancelled ? "border-b border-slate-100 bg-rose-50/70" : tableRowClassName}>
                   <td className="px-4 py-3">{formatDate(order.order_date)}</td>
-                  <td className="px-4 py-3 font-medium">{order.order_no}</td>
-                  <td className="px-4 py-3">{order.customer_name}</td>
-                  <td className="px-4 py-3">{order.contact ?? "-"}</td>
-                  <td className="px-4 py-3">{order.country ?? "-"}</td>
-                  <td className="px-4 py-3">{order.product_line ?? "-"}</td>
+                  <td className="truncate px-4 py-3 font-medium" title={order.order_no}>{order.order_no}</td>
+                  <td className="truncate px-4 py-3" title={order.customer_name ?? ""}>{order.customer_name}</td>
+                  <td className="truncate px-4 py-3" title={order.contact ?? ""}>{order.contact ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={order.country ?? ""}>{order.country ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatNumber(order.quantity)}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb))}</td>
                   <td className="px-4 py-3">{order.payment_status}</td>
                   <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
-                  <td className="px-4 py-3">{order.shipping_method ?? "-"}</td>
-                  <td className="px-4 py-3">{order.shipping_company ?? "-"}</td>
-                  <td className="px-4 py-3">{order.tracking_no ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
+                  <td className="truncate px-4 py-3" title={order.tracking_no ?? ""}>{order.tracking_no ?? "-"}</td>
                   <td className="px-4 py-3">
                     {order.is_refund_or_cancelled ? (
                       <Badge tone="danger">取消/退款，不计入统计</Badge>
@@ -133,6 +174,23 @@ export default async function OrdersPage({
             )}
           </tbody>
         </table>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+        <span>
+          第 {currentPage} 页，每页最多 {pageSize} 条
+        </span>
+        <div className="flex gap-2">
+          {currentPage > 1 ? (
+            <Button href={paginationHref(currentPage - 1)} variant="secondary">
+              上一页
+            </Button>
+          ) : null}
+          {result.data.length === pageSize ? (
+            <Button href={paginationHref(currentPage + 1)} variant="secondary">
+              下一页
+            </Button>
+          ) : null}
+        </div>
       </div>
     </AppShell>
   );

@@ -72,7 +72,19 @@ export default async function DashboardPage({
           <StatCard label="待发货订单总数量" value={formatNumber(data.pendingShipping.quantityTotal)} hint="待发货订单数量合计" />
         </div>
         <div className={`mt-4 ${tableShellClassName}`}>
-          <table className="w-full min-w-[1080px] text-left text-sm">
+          <table className="w-full min-w-[1240px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+            <colgroup>
+              <col className="w-[90px]" />
+              <col className="w-[130px]" />
+              <col className="w-[160px]" />
+              <col className="w-[100px]" />
+              <col className="w-[90px]" />
+              <col className="w-[80px]" />
+              <col className="w-[120px]" />
+              <col className="w-[100px]" />
+              <col className="w-[90px]" />
+              <col className="w-[280px]" />
+            </colgroup>
             <thead className={tableHeadClassName}>
               <tr>
                 <th className="px-4 py-3 font-medium">订单日期</th>
@@ -92,10 +104,10 @@ export default async function DashboardPage({
                 data.pendingShipping.orders.map((order) => (
                   <tr key={order.id} className={tableRowClassName}>
                     <td className="px-4 py-3">{formatDate(order.order_date)}</td>
-                    <td className="px-4 py-3 font-medium">{order.order_no}</td>
-                    <td className="px-4 py-3">{order.customer_name}</td>
-                    <td className="px-4 py-3">{order.country ?? "-"}</td>
-                    <td className="px-4 py-3">{order.product_line ?? "-"}</td>
+                    <td className="truncate px-4 py-3 font-medium" title={order.order_no}>{order.order_no}</td>
+                    <td className="truncate px-4 py-3" title={order.customer_name ?? ""}>{order.customer_name}</td>
+                    <td className="truncate px-4 py-3" title={order.country ?? ""}>{order.country ?? "-"}</td>
+                    <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
                     <td className="px-4 py-3 text-right">{formatNumber(order.quantity)}</td>
                     <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_effective_rmb ?? order.sales_amount_rmb ?? 0))}</td>
                     <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
@@ -105,7 +117,7 @@ export default async function DashboardPage({
                 ))
               ) : (
                 <tr>
-                  <td className="px-4 py-8 text-slate-500" colSpan={11}>当前没有待发货订单</td>
+                  <td className="px-4 py-8 text-slate-500" colSpan={10}>当前没有待发货订单</td>
                 </tr>
               )}
             </tbody>
@@ -121,7 +133,7 @@ export default async function DashboardPage({
         <h2 className="text-base font-semibold">需要跟进客户列表</h2>
         <p className="mt-1 text-sm text-slate-500">此列表不受 Dashboard 时间范围影响，始终显示当前需要跟进的客户。</p>
         <div className={`mt-4 ${tableShellClassName}`}>
-          <table className="w-full min-w-[900px] text-left text-sm">
+          <table className="w-full min-w-[980px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
             <thead className={tableHeadClassName}>
               <tr>
                 <th className="px-4 py-3 font-medium">客户名</th>

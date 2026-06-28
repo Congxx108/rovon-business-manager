@@ -69,7 +69,23 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         </p>
         {ordersResult.data.length ? (
         <div className={`mt-4 ${tableShellClassName}`}>
-          <table className="w-full min-w-[1280px] text-left text-sm">
+          <table className="w-full min-w-[1500px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+            <colgroup>
+              <col className="w-[90px]" />
+              <col className="w-[130px]" />
+              <col className="w-[100px]" />
+              <col className="w-[90px]" />
+              <col className="w-[80px]" />
+              <col className="w-[120px]" />
+              <col className="w-[100px]" />
+              <col className="w-[100px]" />
+              <col className="w-[100px]" />
+              <col className="w-[90px]" />
+              <col className="w-[130px]" />
+              <col className="w-[150px]" />
+              <col className="w-[100px]" />
+              <col className="w-[100px]" />
+            </colgroup>
             <thead className={tableHeadClassName}>
               <tr>
                 <th className="py-2 pr-4 font-medium">订单日期</th>
@@ -92,17 +108,17 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                 {ordersResult.data.map((order) => (
                   <tr key={order.id} className={tableRowClassName}>
                     <td className="py-3 pr-4">{formatDate(order.order_date)}</td>
-                    <td className="py-3 pr-4 font-medium">{order.order_no}</td>
-                    <td className="py-3 pr-4">{order.country ?? "-"}</td>
-                    <td className="py-3 pr-4">{order.product_line ?? "-"}</td>
+                    <td className="truncate py-3 pr-4 font-medium" title={order.order_no}>{order.order_no}</td>
+                    <td className="truncate py-3 pr-4" title={order.country ?? ""}>{order.country ?? "-"}</td>
+                    <td className="truncate py-3 pr-4" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
                     <td className="py-3 pr-4 text-right">{formatNumber(order.quantity)}</td>
                     <td className="py-3 pr-4 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb ?? 0))}</td>
                     <td className="py-3 pr-4">{order.order_status}</td>
                     <td className="py-3 pr-4">{order.payment_status}</td>
                     <td className="py-3 pr-4"><ShippingStatusBadge value={order.shipping_status} /></td>
-                    <td className="py-3 pr-4">{order.shipping_method ?? "-"}</td>
-                    <td className="py-3 pr-4">{order.shipping_company ?? "-"}</td>
-                    <td className="py-3 pr-4">{order.tracking_no ?? "-"}</td>
+                    <td className="truncate py-3 pr-4" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
+                    <td className="truncate py-3 pr-4" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
+                    <td className="truncate py-3 pr-4" title={order.tracking_no ?? ""}>{order.tracking_no ?? "-"}</td>
                     <td className="py-3 pr-4">{formatDate(order.shipping_date)}</td>
                     <td className="py-3 pr-4">{order.is_refund_or_cancelled ? <Badge tone="danger">取消/退款</Badge> : "-"}</td>
                   </tr>

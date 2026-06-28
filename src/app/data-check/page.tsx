@@ -101,7 +101,13 @@ function TopCustomersTable({
   return (
     <section className={tableShellClassName}>
       <div className="border-b border-slate-200 px-4 py-3 font-semibold">历史销售额前 10 客户</div>
-      <table className="w-full min-w-[720px] text-left text-sm">
+      <table className="w-full min-w-[820px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <colgroup>
+          <col className="w-[220px]" />
+          <col className="w-[180px]" />
+          <col className="w-[120px]" />
+          <col className="w-[140px]" />
+        </colgroup>
         <thead className={tableHeadClassName}>
           <tr>
             <th className="px-4 py-3 font-medium">客户</th>
@@ -113,9 +119,9 @@ function TopCustomersTable({
         <tbody>
           {customers.map((customer) => (
             <tr key={`${customer.name}-${customer.contact}-${customer.country}`} className={tableRowClassName}>
-              <td className="px-4 py-3">{customer.name}</td>
-              <td className="px-4 py-3">{customer.contact || "-"}</td>
-              <td className="px-4 py-3">{customer.country || "-"}</td>
+              <td className="truncate px-4 py-3" title={customer.name}>{customer.name}</td>
+              <td className="truncate px-4 py-3" title={customer.contact}>{customer.contact || "-"}</td>
+              <td className="truncate px-4 py-3" title={customer.country}>{customer.country || "-"}</td>
               <td className="px-4 py-3 text-right font-medium">{formatRmb(customer.totalSalesRmb)}</td>
             </tr>
           ))}
@@ -143,7 +149,7 @@ function RecentDailyLeadsTable({
   return (
     <section className={tableShellClassName}>
       <div className="border-b border-slate-200 px-4 py-3 font-semibold">最近 7 条每日潜客记录</div>
-      <table className="w-full min-w-[920px] text-left text-sm">
+      <table className="w-full min-w-[1040px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
         <thead className={tableHeadClassName}>
           <tr>
             <th className="px-4 py-3 font-medium">日期</th>

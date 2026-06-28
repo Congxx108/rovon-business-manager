@@ -4,13 +4,15 @@ type ButtonProps = {
   children: React.ReactNode;
   href?: string;
   type?: "button" | "submit";
+  name?: string;
+  value?: string;
   variant?: "primary" | "secondary" | "danger" | "warning";
   disabled?: boolean;
   className?: string;
   onClick?: () => void;
 };
 
-export function Button({ children, href, type = "button", variant = "primary", disabled, className = "", onClick }: ButtonProps) {
+export function Button({ children, href, type = "button", name, value, variant = "primary", disabled, className = "", onClick }: ButtonProps) {
   const classes = `${buttonClassName(variant)} ${className}`;
 
   if (href) {
@@ -22,7 +24,7 @@ export function Button({ children, href, type = "button", variant = "primary", d
   }
 
   return (
-    <button type={type} disabled={disabled} className={classes} onClick={onClick}>
+    <button type={type} name={name} value={value} disabled={disabled} className={classes} onClick={onClick}>
       {children}
     </button>
   );
@@ -56,8 +58,8 @@ export function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
-      <div className="mb-4 border-b border-slate-100 pb-3">
+    <section className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/50">
+      <div className="mb-3 border-b border-slate-100 pb-3">
         <h2 className="text-base font-semibold text-slate-950">{title}</h2>
         {description ? <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p> : null}
       </div>
@@ -75,8 +77,9 @@ export function EmptyState({ message }: { message: string }) {
 }
 
 export const tableShellClassName = "overflow-x-auto rounded-lg border border-slate-200/80 bg-white shadow-sm shadow-slate-200/50";
-export const tableHeadClassName = "border-b border-slate-200 bg-slate-50/90 text-xs uppercase tracking-wide text-slate-500";
-export const tableRowClassName = "border-b border-slate-100 hover:bg-slate-50/80";
+export const tableHeadClassName =
+  "border-b border-slate-200 bg-slate-50/90 text-xs uppercase tracking-wide text-slate-500 [&_th]:whitespace-nowrap";
+export const tableRowClassName = "border-b border-slate-100 align-middle hover:bg-slate-50/80";
 
 function buttonClassName(variant: NonNullable<ButtonProps["variant"]>) {
   const base =
