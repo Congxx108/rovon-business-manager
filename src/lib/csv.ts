@@ -34,6 +34,9 @@ export const ORDER_CSV_FIELD_ALIASES = {
   tracking_no: ["物流单号", "快运单号", "货运单号", "物流单号/货运单号", "tracking_no"],
   shipping_date: ["发货日期", "shipping_date"],
   shipping_remark: ["发货备注", "shipping_remark"],
+  payment_currency: ["付款货币", "支付货币", "客户支付货币", "payment_currency"],
+  rmb_payment_method: ["人民币收款方式", "收款方式", "rmb_payment_method"],
+  payment_remark: ["付款备注", "payment_remark"],
 } satisfies CsvFieldAliases;
 
 export const ORDER_CSV_FIELD_LABELS: Record<keyof typeof ORDER_CSV_FIELD_ALIASES, string> = {
@@ -52,6 +55,9 @@ export const ORDER_CSV_FIELD_LABELS: Record<keyof typeof ORDER_CSV_FIELD_ALIASES
   tracking_no: "物流单号/货运单号",
   shipping_date: "发货日期",
   shipping_remark: "发货备注",
+  payment_currency: "客户支付货币",
+  rmb_payment_method: "人民币收款方式",
+  payment_remark: "付款备注",
 };
 
 export const DAILY_LEAD_CSV_FIELD_ALIASES = {

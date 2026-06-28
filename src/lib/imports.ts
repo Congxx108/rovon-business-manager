@@ -7,6 +7,7 @@ import {
   parseNumberInput,
   type CsvRecord,
 } from "@/lib/csv";
+import { PAYMENT_CURRENCIES, RMB_PAYMENT_METHODS, suggestPaymentCurrency } from "@/lib/payment";
 import { normalizeShippingMethod, normalizeShippingStatus } from "@/lib/shipping";
 
 export type ParsedOrderImportRow = {
@@ -26,6 +27,9 @@ export type ParsedOrderImportRow = {
   tracking_no: string | null;
   shipping_date: string | null;
   shipping_remark: string | null;
+  payment_currency: string | null;
+  rmb_payment_method: string | null;
+  payment_remark: string | null;
   contactWarning: string | null;
   errors: string[];
 };
@@ -65,6 +69,14 @@ export function mapOrderImportRows(records: CsvRecord[], defaults: { country?: s
     const shippingCompany = cleanText(getCsvValue(record, ORDER_CSV_FIELD_ALIASES.shipping_company));
     const trackingNo = cleanText(getCsvValue(record, ORDER_CSV_FIELD_ALIASES.tracking_no));
     const shippingRemark = cleanText(getCsvValue(record, ORDER_CSV_FIELD_ALIASES.shipping_remark));
+    const paymentCurrency = normalizeOption(
+      cleanText(getCsvValue(record, ORDER_CSV_FIELD_ALIASES.payment_currency)) ?? suggestPaymentCurrency(country),
+      PAYMENT_CURRENCIES,
+    );
+    const rmbPaymentMethod = paymentCurrency === "RMB"
+      ? normalizeOption(cleanText(getCsvValue(record, ORDER_CSV_FIELD_ALIASES.rmb_payment_method)), RMB_PAYMENT_METHODS)
+      : null;
+    const paymentRemark = cleanText(getCsvValue(record, ORDER_CSV_FIELD_ALIASES.payment_remark));
     const orderDate = parseDateInput(dateRaw);
     const shippingDateRaw = getCsvValue(record, ORDER_CSV_FIELD_ALIASES.shipping_date);
     const shippingDate = shippingDateRaw.trim() ? parseDateInput(shippingDateRaw) : { value: "", valid: true };
@@ -102,6 +114,9 @@ export function mapOrderImportRows(records: CsvRecord[], defaults: { country?: s
       tracking_no: trackingNo,
       shipping_date: shippingDate.value || null,
       shipping_remark: shippingRemark,
+      payment_currency: paymentCurrency,
+      rmb_payment_method: rmbPaymentMethod,
+      payment_remark: paymentRemark,
       contactWarning,
       errors,
     };
@@ -179,4 +194,9 @@ function optionalNumber(value: string) {
 function cleanText(value: string) {
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+function normalizeOption<T extends readonly string[]>(value: string | null, options: T) {
+  if (!value) return null;
+  return options.includes(value) ? value : "其他";
 }

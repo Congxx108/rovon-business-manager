@@ -1,58 +1,134 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { searchOrderCustomers, type OrderCustomerSuggestion } from "@/app/orders/actions";
 import { Button } from "@/components/ui";
 import { detectCountryFromContact } from "@/lib/country-detection";
+import { formatDate, formatNumber, formatRmb } from "@/lib/format";
+import { PAYMENT_CURRENCIES, RMB_PAYMENT_METHODS, suggestPaymentCurrency } from "@/lib/payment";
 import type { OrderItem } from "@/lib/types";
 
 const productLineOptions = ["女包", "书包", "男包", "混合", "其他"];
 
 type OrderItemDraft = Pick<OrderItem, "id" | "product_line" | "quantity" | "sales_amount_rmb">;
 
-export function ContactCountryFields({
+export function CustomerAutocompleteFields({
+  defaultCustomerName = "",
   defaultContact = "",
   defaultCountry = "",
 }: {
+  defaultCustomerName?: string | null;
   defaultContact?: string | null;
   defaultCountry?: string | null;
 }) {
+  const [customerName, setCustomerName] = useState(defaultCustomerName ?? "");
   const [contact, setContact] = useState(defaultContact ?? "");
   const initialDetectedCountry = detectCountryFromContact(defaultContact);
   const [country, setCountry] = useState(defaultCountry || initialDetectedCountry || "");
-  const [lastDetected, setLastDetected] = useState<string | null>(null);
+  const [lastDetected, setLastDetected] = useState<string | null>(initialDetectedCountry);
   const [countryTouched, setCountryTouched] = useState(Boolean(defaultCountry));
+  const [suggestions, setSuggestions] = useState<OrderCustomerSuggestion[]>([]);
+  const [open, setOpen] = useState(false);
   const detected = detectCountryFromContact(contact);
+  const searchText = contact.trim().length >= 2 ? contact.trim() : customerName.trim();
+  const visibleSuggestions = open && searchText.length >= 2 ? suggestions : [];
+
+  useEffect(() => {
+    if (searchText.length < 2) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      searchOrderCustomers(searchText).then((results) => {
+        if (!cancelled) {
+          setSuggestions(results);
+          setOpen(true);
+        }
+      });
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [searchText]);
+
+  function updateCountry(nextCountry: string, touched: boolean) {
+    setCountry(nextCountry);
+    setCountryTouched(touched);
+    window.dispatchEvent(new CustomEvent("rovon-country-change", { detail: nextCountry }));
+  }
+
+  function chooseCustomer(customer: OrderCustomerSuggestion) {
+    setCustomerName(customer.name);
+    setContact(customer.contact ?? "");
+    updateCountry(customer.country ?? "", true);
+    setOpen(false);
+  }
 
   return (
     <>
       <label className="block text-sm font-medium text-slate-700">
-        联系方式 / WhatsApp
+        客户名
         <input
-          name="contact"
-          value={contact}
+          name="customer_name"
+          value={customerName}
           onChange={(event) => {
-            const nextContact = event.target.value;
-            const nextDetected = detectCountryFromContact(nextContact);
-            setContact(nextContact);
-            if (nextDetected && (!countryTouched || !country || country === lastDetected)) {
-              setCountry(nextDetected);
-              setLastDetected(nextDetected);
-              setCountryTouched(false);
-            }
+            setCustomerName(event.target.value);
+            setOpen(true);
           }}
+          placeholder="输入客户名可匹配老客户"
           className={inputClassName}
         />
       </label>
+      <div className="relative">
+        <label className="block text-sm font-medium text-slate-700">
+          联系方式 / WhatsApp
+          <input
+            name="contact"
+            value={contact}
+            onChange={(event) => {
+              const nextContact = event.target.value;
+              const nextDetected = detectCountryFromContact(nextContact);
+              setContact(nextContact);
+              setOpen(true);
+              if (nextDetected && (!countryTouched || !country || country === lastDetected)) {
+                updateCountry(nextDetected, false);
+                setLastDetected(nextDetected);
+              }
+            }}
+            placeholder="输入 WhatsApp 可匹配老客户"
+            className={inputClassName}
+          />
+        </label>
+        {visibleSuggestions.length ? (
+          <div className="absolute z-20 mt-2 max-h-72 w-[min(680px,90vw)] overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+            {visibleSuggestions.map((customer) => (
+              <button
+                key={customer.id}
+                type="button"
+                onClick={() => chooseCustomer(customer)}
+                className="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-slate-50"
+              >
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-medium text-slate-950">
+                  <span>{customer.name}</span>
+                  <span className="text-slate-500">{customer.contact ?? "-"}</span>
+                  <span className="text-slate-500">{customer.country ?? "-"}</span>
+                </div>
+                <div className="mt-1 text-xs text-slate-500">
+                  最近下单 {formatDate(customer.last_order_date)} · 历史订单 {formatNumber(customer.total_orders)} · 历史销售{" "}
+                  {formatRmb(Number(customer.total_sales_rmb ?? 0))}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <label className="block text-sm font-medium text-slate-700">
         国家/渠道<span className="ml-1 text-rose-600">*</span>
         <input
           name="country"
           required
           value={country}
-          onChange={(event) => {
-            setCountry(event.target.value);
-            setCountryTouched(true);
-          }}
+          onChange={(event) => updateCountry(event.target.value, true)}
           placeholder="例如 加纳 / 微信订单"
           className={inputClassName}
         />
@@ -172,12 +248,31 @@ export function OrderItemsInput({ defaultItems }: { defaultItems?: OrderItemDraf
 export function PaymentFields({
   defaultPaymentStatus = "已付全款",
   defaultDepositAmount = 0,
+  defaultPaymentCurrency = "",
+  defaultRmbPaymentMethod = "",
+  defaultPaymentRemark = "",
 }: {
   defaultPaymentStatus?: string | null;
   defaultDepositAmount?: number | null;
+  defaultPaymentCurrency?: string | null;
+  defaultRmbPaymentMethod?: string | null;
+  defaultPaymentRemark?: string | null;
 }) {
   const normalizedStatus = defaultPaymentStatus === "定金" ? "定金" : "已付全款";
   const [paymentStatus, setPaymentStatus] = useState(normalizedStatus);
+  const [paymentCurrency, setPaymentCurrency] = useState(defaultPaymentCurrency ?? "");
+  const [currencyTouched, setCurrencyTouched] = useState(Boolean(defaultPaymentCurrency));
+
+  useEffect(() => {
+    function handleCountryChange(event: Event) {
+      const country = (event as CustomEvent<string>).detail;
+      const suggested = suggestPaymentCurrency(country);
+      if (suggested && !currencyTouched) setPaymentCurrency(suggested);
+    }
+
+    window.addEventListener("rovon-country-change", handleCountryChange);
+    return () => window.removeEventListener("rovon-country-change", handleCountryChange);
+  }, [currencyTouched]);
 
   return (
     <>
@@ -208,6 +303,44 @@ export function PaymentFields({
       ) : (
         <input type="hidden" name="deposit_amount_rmb" value="0" />
       )}
+      <label className="block text-sm font-medium text-slate-700">
+        客户支付货币
+        <select
+          name="payment_currency"
+          value={paymentCurrency}
+          onChange={(event) => {
+            setPaymentCurrency(event.target.value);
+            setCurrencyTouched(true);
+          }}
+          className={inputClassName}
+        >
+          <option value="">未填写</option>
+          {PAYMENT_CURRENCIES.map((currency) => (
+            <option key={currency} value={currency}>
+              {currency}
+            </option>
+          ))}
+        </select>
+      </label>
+      {paymentCurrency === "RMB" ? (
+        <label className="block text-sm font-medium text-slate-700">
+          人民币收款方式
+          <select name="rmb_payment_method" defaultValue={defaultRmbPaymentMethod ?? ""} className={inputClassName}>
+            <option value="">未填写</option>
+            {RMB_PAYMENT_METHODS.map((method) => (
+              <option key={method} value={method}>
+                {method}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : (
+        <input type="hidden" name="rmb_payment_method" value="" />
+      )}
+      <label className="block text-sm font-medium text-slate-700 md:col-span-2 xl:col-span-3">
+        付款备注
+        <textarea name="payment_remark" defaultValue={defaultPaymentRemark ?? ""} rows={2} className={`${inputClassName} h-auto py-2`} />
+      </label>
     </>
   );
 }

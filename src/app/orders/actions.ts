@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { refreshCustomersFromOrders } from "@/lib/customers";
+import { PAYMENT_CURRENCIES, RMB_PAYMENT_METHODS } from "@/lib/payment";
 import { needsShippingInfoReminder, normalizeShippingMethod, normalizeShippingStatus } from "@/lib/shipping";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -51,10 +52,19 @@ function shippingPayload(formData: FormData) {
 
 function paymentPayload(formData: FormData) {
   const paymentStatus = textValue(formData, "payment_status") === "定金" ? "定金" : "已付全款";
+  const paymentCurrency = normalizeOption(textValue(formData, "payment_currency"), PAYMENT_CURRENCIES);
   return {
     payment_status: paymentStatus,
     deposit_amount_rmb: paymentStatus === "定金" ? numberValue(formData, "deposit_amount_rmb") : 0,
+    payment_currency: paymentCurrency,
+    rmb_payment_method: paymentCurrency === "RMB" ? normalizeOption(textValue(formData, "rmb_payment_method"), RMB_PAYMENT_METHODS) : null,
+    payment_remark: textValue(formData, "payment_remark"),
   };
+}
+
+function normalizeOption<T extends readonly string[]>(value: string | null, options: T) {
+  if (!value) return null;
+  return options.includes(value) ? value : "其他";
 }
 
 function orderItemsFromFormData(formData: FormData) {
@@ -257,4 +267,31 @@ export async function markOrderShipped(id: string, formData: FormData) {
   revalidatePath("/data-check");
   const returnTo = textValue(formData, "return_to");
   redirect(returnTo?.startsWith("/") ? returnTo : "/orders?pendingShipping=1");
+}
+
+export type OrderCustomerSuggestion = {
+  id: string;
+  name: string;
+  contact: string | null;
+  country: string | null;
+  last_order_date: string | null;
+  total_orders: number;
+  total_sales_rmb: number;
+};
+
+export async function searchOrderCustomers(query: string): Promise<OrderCustomerSuggestion[]> {
+  const search = query.trim();
+  if (search.length < 2) return [];
+
+  const supabase = getSupabaseAdminClient();
+  const escaped = search.replace(/[%_]/g, (match) => `\\${match}`);
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id,name,contact,country,last_order_date,total_orders,total_sales_rmb")
+    .or(`name.ilike.%${escaped}%,contact.ilike.%${escaped}%`)
+    .order("total_sales_rmb", { ascending: false })
+    .limit(8);
+
+  if (error) return [];
+  return (data ?? []) as OrderCustomerSuggestion[];
 }

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
-import { ContactCountryFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
+import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormSection } from "@/components/ui";
 import { markOrderCancelled, updateOrder } from "@/app/orders/actions";
@@ -46,8 +46,7 @@ export default async function EditOrderPage({
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={order.order_date} />
             <FormField label="订单编号" name="order_no" required defaultValue={order.order_no} />
-            <FormField label="客户名" name="customer_name" defaultValue={order.customer_name} />
-            <ContactCountryFields defaultContact={order.contact} defaultCountry={order.country} />
+            <CustomerAutocompleteFields defaultCustomerName={order.customer_name} defaultContact={order.contact} defaultCountry={order.country} />
           </div>
         </FormSection>
 
@@ -57,7 +56,13 @@ export default async function EditOrderPage({
 
         <FormSection title="状态与备注">
           <div className="grid gap-3 md:grid-cols-3">
-            <PaymentFields defaultPaymentStatus={order.payment_status} defaultDepositAmount={order.deposit_amount_rmb} />
+            <PaymentFields
+              defaultPaymentStatus={order.payment_status}
+              defaultDepositAmount={order.deposit_amount_rmb}
+              defaultPaymentCurrency={order.payment_currency}
+              defaultRmbPaymentMethod={order.rmb_payment_method}
+              defaultPaymentRemark={order.payment_remark}
+            />
             <label className="flex items-center gap-2 self-end rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
               <input
                 name="is_refund_or_cancelled"

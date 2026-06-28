@@ -12,6 +12,9 @@ export type Order = {
   order_status: string;
   payment_status: string;
   deposit_amount_rmb: number;
+  payment_currency: string | null;
+  rmb_payment_method: string | null;
+  payment_remark: string | null;
   shipping_status: string;
   shipping_method: string | null;
   shipping_company: string | null;

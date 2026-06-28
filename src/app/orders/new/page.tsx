@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
-import { ContactCountryFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
+import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormSection } from "@/components/ui";
 import { createOrder } from "@/app/orders/actions";
@@ -41,8 +41,7 @@ export default async function NewOrderPage({
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={todayString()} />
             <FormField label="订单编号" name="order_no" placeholder="不填则自动生成" />
-            <FormField label="客户名" name="customer_name" placeholder="客户名或联系方式至少填一个" />
-            <ContactCountryFields />
+            <CustomerAutocompleteFields />
           </div>
         </FormSection>
 
