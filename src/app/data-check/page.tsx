@@ -25,7 +25,7 @@ export default async function DataCheckPage() {
         <CheckSection title="发货检查" items={result.data.shipping} />
       </section>
 
-      <section className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 shadow-sm">
+      <section className="mt-6 rounded-2xl border border-amber-200 bg-gradient-to-br from-white to-amber-50 p-5 shadow-sm shadow-amber-100/70">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-amber-950">测试数据清理</h2>
@@ -36,7 +36,7 @@ export default async function DataCheckPage() {
       </section>
 
       <section className="mt-6 space-y-5">
-        <h2 className="text-lg font-semibold">导入后核对摘要</h2>
+        <h2 className="text-lg font-semibold tracking-tight">导入后核对摘要</h2>
         <div className="grid gap-5 lg:grid-cols-3">
           <ReviewSection title="订单摘要" items={result.data.importReview.orderSummary} />
           <ReviewSection title="客户摘要" items={result.data.importReview.customerSummary} />
@@ -57,11 +57,11 @@ function CheckSection({
   items: Array<{ label: string; value: number; severity: "ok" | "warn" | "error"; kind?: "number" | "money" }>;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/50">
-      <h2 className="text-base font-semibold">{title}</h2>
+    <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/70">
+      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
       <div className="mt-4 space-y-3">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between gap-4 border-b border-slate-100 pb-2 text-sm">
+          <div key={item.label} className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 text-sm">
             <span className="text-slate-600">{item.label}</span>
             <span className={colorForSeverity(item.severity)}>{item.kind === "money" ? formatRmb(item.value) : formatNumber(item.value)}</span>
           </div>
@@ -72,18 +72,18 @@ function CheckSection({
 }
 
 function colorForSeverity(severity: "ok" | "warn" | "error") {
-  if (severity === "error") return "font-semibold text-rose-700";
-  if (severity === "warn") return "font-semibold text-amber-700";
-  return "font-semibold text-emerald-700";
+  if (severity === "error") return "rounded-full bg-rose-50 px-2.5 py-1 font-semibold text-rose-700 ring-1 ring-rose-200";
+  if (severity === "warn") return "rounded-full bg-amber-50 px-2.5 py-1 font-semibold text-amber-700 ring-1 ring-amber-200";
+  return "rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-200";
 }
 
 function ReviewSection({ title, items }: { title: string; items: ImportReviewMetric[] }) {
   return (
-    <section className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/50">
-      <h3 className="text-base font-semibold">{title}</h3>
+    <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/70">
+      <h3 className="text-base font-semibold tracking-tight">{title}</h3>
       <div className="mt-4 space-y-3">
         {items.map((item) => (
-          <div key={item.label} className="flex items-center justify-between gap-4 border-b border-slate-100 pb-2 text-sm">
+          <div key={item.label} className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 text-sm">
             <span className="text-slate-600">{item.label}</span>
             <span className="font-semibold text-slate-950">{formatReviewValue(item)}</span>
           </div>

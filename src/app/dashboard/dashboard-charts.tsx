@@ -23,7 +23,7 @@ type DashboardChartsProps = {
   recentLeads: DashboardData["recentLeads"];
 };
 
-const colors = ["#0f172a", "#2563eb", "#059669", "#d97706", "#7c3aed", "#64748b"];
+const colors = ["#0f274a", "#2563eb", "#059669", "#d97706", "#7c3aed", "#64748b"];
 
 export function DashboardCharts({ monthlySales, countrySales, recentLeads }: DashboardChartsProps) {
   const topCountries = countrySales.slice(0, 10);
@@ -36,11 +36,11 @@ export function DashboardCharts({ monthlySales, countrySales, recentLeads }: Das
           {monthlySales.length ? (
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={monthlySales} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" />
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tickFormatter={(value) => compactMoney(Number(value))} tick={{ fontSize: 12 }} width={68} />
                 <Tooltip formatter={(value) => formatRmb(Number(value))} labelFormatter={(label) => `月份：${label}`} />
-                <Line type="monotone" dataKey="sales" name="销售额" stroke="#0f172a" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="sales" name="销售额" stroke="#0f274a" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
@@ -111,10 +111,10 @@ export function DashboardCharts({ monthlySales, countrySales, recentLeads }: Das
         </ChartCard>
       </section>
 
-      <section className="rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
+      <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold">每日潜客增长趋势</h2>
+            <h2 className="text-lg font-semibold tracking-tight">每日潜客增长趋势</h2>
             <p className="mt-1 text-sm text-slate-500">
               WhatsApp 群人数接近上限后会手动新建群，因此 Dashboard 重点观察每日增加数趋势，而不是群当前总人数。
             </p>
@@ -142,13 +142,13 @@ function LeadLineChart({
   stroke: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-      <div className="text-sm font-medium text-slate-700">{title}</div>
+    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-3 shadow-inner shadow-white">
+      <div className="text-sm font-semibold text-slate-700">{title}</div>
       <div className="mt-3 h-56">
         {data.length ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
-              <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" />
               <XAxis dataKey="stat_date" tick={{ fontSize: 11 }} minTickGap={24} />
               <YAxis tickFormatter={(value) => formatNumber(Number(value))} tick={{ fontSize: 11 }} />
               <Tooltip formatter={(value) => formatSigned(Number(value))} labelFormatter={(label) => `日期：${label}`} />
@@ -165,8 +165,8 @@ function LeadLineChart({
 
 function ChartCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
-      <h2 className="text-base font-semibold">{title}</h2>
+    <section className="polish-fade-in rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70 transition duration-200 hover:shadow-md hover:shadow-slate-200/70">
+      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
       {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
       <div className="mt-4">{children}</div>
     </section>
@@ -175,7 +175,7 @@ function ChartCard({ title, description, children }: { title: string; descriptio
 
 function EmptyChart({ message, compact = false }: { message: string; compact?: boolean }) {
   return (
-    <div className={`flex items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 text-center text-sm text-slate-500 ${compact ? "h-full" : "h-[280px]"}`}>
+    <div className={`flex items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-4 text-center text-sm text-slate-500 ${compact ? "h-full" : "h-[280px]"}`}>
       {message}
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { searchOrderCustomers, type OrderCustomerSuggestion } from "@/app/orders/actions";
-import { Button } from "@/components/ui";
+import { Button, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, textareaClassName } from "@/components/ui";
 import { detectCountryFromContact } from "@/lib/country-detection";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 import { PAYMENT_CURRENCIES, RMB_PAYMENT_METHODS, suggestPaymentCurrency } from "@/lib/payment";
@@ -66,7 +66,7 @@ export function CustomerAutocompleteFields({
 
   return (
     <>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         客户名
         <input
           name="customer_name"
@@ -80,7 +80,7 @@ export function CustomerAutocompleteFields({
         />
       </label>
       <div className="relative">
-        <label className="block text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           联系方式 / WhatsApp
           <input
             name="contact"
@@ -100,13 +100,13 @@ export function CustomerAutocompleteFields({
           />
         </label>
         {visibleSuggestions.length ? (
-          <div className="absolute z-20 mt-2 max-h-72 w-[min(680px,90vw)] overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+          <div className="absolute z-20 mt-2 max-h-72 w-[min(720px,90vw)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/10">
             {visibleSuggestions.map((customer) => (
               <button
                 key={customer.id}
                 type="button"
                 onClick={() => chooseCustomer(customer)}
-                className="block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-slate-50"
+                className="block w-full rounded-xl px-3 py-2.5 text-left text-sm transition hover:bg-blue-50/60"
               >
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-medium text-slate-950">
                   <span>{customer.name}</span>
@@ -122,7 +122,7 @@ export function CustomerAutocompleteFields({
           </div>
         ) : null}
       </div>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         国家/渠道<span className="ml-1 text-rose-600">*</span>
         <input
           name="country"
@@ -162,9 +162,9 @@ export function OrderItemsInput({ defaultItems }: { defaultItems?: OrderItemDraf
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-lg border border-slate-200">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/50">
         <table className="w-full min-w-[760px] table-fixed text-left text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500 [&_th]:whitespace-nowrap">
+          <thead className={tableHeadClassName}>
             <tr>
               <th className="w-[220px] px-3 py-2 font-medium">产品类目</th>
               <th className="w-[140px] px-3 py-2 text-right font-medium">数量</th>
@@ -174,7 +174,7 @@ export function OrderItemsInput({ defaultItems }: { defaultItems?: OrderItemDraf
           </thead>
           <tbody>
             {items.map((item, index) => (
-              <tr key={`${item.id}-${index}`} className="border-b border-slate-100">
+              <tr key={`${item.id}-${index}`} className={tableRowClassName}>
                 <td className="px-3 py-2">
                   <input type="hidden" name="item_id" value={item.id} />
                   <select
@@ -216,7 +216,7 @@ export function OrderItemsInput({ defaultItems }: { defaultItems?: OrderItemDraf
                     type="button"
                     onClick={() => removeItem(index)}
                     disabled={items.length === 1}
-                    className="h-9 rounded-md border border-slate-300 px-3 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     删除
                   </button>
@@ -235,8 +235,8 @@ export function OrderItemsInput({ defaultItems }: { defaultItems?: OrderItemDraf
           添加产品类目
         </Button>
         <div className="flex flex-wrap gap-3 text-sm">
-          <span className="rounded-md bg-slate-100 px-3 py-2 font-medium text-slate-700">总数量：{totals.quantity.toLocaleString()}</span>
-          <span className="rounded-md bg-slate-100 px-3 py-2 font-medium text-slate-700">
+          <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-700">总数量：{totals.quantity.toLocaleString()}</span>
+          <span className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 font-semibold text-blue-800">
             总销售额：¥{totals.sales.toLocaleString()}
           </span>
         </div>
@@ -276,7 +276,7 @@ export function PaymentFields({
 
   return (
     <>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         付款状态
         <select
           name="payment_status"
@@ -289,7 +289,7 @@ export function PaymentFields({
         </select>
       </label>
       {paymentStatus === "定金" ? (
-        <label className="block text-sm font-medium text-slate-700">
+        <label className={`${labelClassName} polish-fade-in`}>
           定金金额 RMB
           <input
             name="deposit_amount_rmb"
@@ -303,7 +303,7 @@ export function PaymentFields({
       ) : (
         <input type="hidden" name="deposit_amount_rmb" value="0" />
       )}
-      <label className="block text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         客户支付货币
         <select
           name="payment_currency"
@@ -323,7 +323,7 @@ export function PaymentFields({
         </select>
       </label>
       {paymentCurrency === "RMB" ? (
-        <label className="block text-sm font-medium text-slate-700">
+        <label className={`${labelClassName} polish-fade-in`}>
           人民币收款方式
           <select name="rmb_payment_method" defaultValue={defaultRmbPaymentMethod ?? ""} className={inputClassName}>
             <option value="">未填写</option>
@@ -337,13 +337,10 @@ export function PaymentFields({
       ) : (
         <input type="hidden" name="rmb_payment_method" value="" />
       )}
-      <label className="block text-sm font-medium text-slate-700 md:col-span-2 xl:col-span-3">
+      <label className={`${labelClassName} md:col-span-2 xl:col-span-3`}>
         付款备注
-        <textarea name="payment_remark" defaultValue={defaultPaymentRemark ?? ""} rows={2} className={`${inputClassName} h-auto py-2`} />
+        <textarea name="payment_remark" defaultValue={defaultPaymentRemark ?? ""} rows={2} className={textareaClassName} />
       </label>
     </>
   );
 }
-
-const inputClassName =
-  "mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm shadow-slate-200/40 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10";

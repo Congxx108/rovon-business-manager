@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { CsvExportButton } from "@/components/csv-export-button";
 import { PageHeader } from "@/components/page-header";
 import { StatusNote } from "@/components/status-note";
-import { Badge, Button, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
+import { Badge, Button, FilterBar, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 import { refreshCustomerStatsAction } from "@/app/customers/actions";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 import { getCustomerFilterOptions, getCustomers } from "@/lib/data";
@@ -55,14 +55,15 @@ export default async function CustomersPage({
         </div>
       ) : null}
 
-      <form className="mb-5 grid gap-3 rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/50 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto_auto]" action="/customers">
-        <label className="text-sm font-medium text-slate-700">
+      <FilterBar>
+      <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto_auto]" action="/customers">
+        <label className={labelClassName}>
           搜索
           <input
             name="search"
             defaultValue={filters.search ?? ""}
             placeholder="客户名 / 联系方式"
-            className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+            className={inputClassName}
           />
         </label>
         <FilterSelect label="跟进优先级" name="followPriority" value={filters.followPriority} options={filterOptions.data.followPriorities} />
@@ -71,6 +72,7 @@ export default async function CustomersPage({
         <Button type="submit" className="self-end">筛选</Button>
         <Button href="/customers" variant="secondary" className="self-end">清空</Button>
       </form>
+      </FilterBar>
 
       <div className={tableShellClassName}>
         <table className="w-full min-w-[1600px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
@@ -161,12 +163,12 @@ function FilterSelect({
   options: string[];
 }) {
   return (
-    <label className="text-sm font-medium text-slate-700">
+    <label className={labelClassName}>
       {label}
       <select
         name={name}
         defaultValue={value ?? ""}
-        className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+        className={inputClassName}
       >
         <option value="">全部</option>
         {options.map((option) => (

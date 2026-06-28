@@ -62,7 +62,7 @@ export default async function EditDailyLeadPage({
           description="正常情况下不用填写手动增加数；只有换群、历史数据修正、WhatsApp2 中途启用等情况，才需要手动覆盖系统计算值。"
         >
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
               <input
                 name="is_handbag_group_reset"
                 type="checkbox"
@@ -71,7 +71,7 @@ export default async function EditDailyLeadPage({
               />
               是否女包群换群/重置
             </label>
-            <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
               <input
                 name="is_backpack_group_reset"
                 type="checkbox"
@@ -109,7 +109,7 @@ export default async function EditDailyLeadPage({
 
 function ResultCard({ label, value }: { label: string; value: string | number | null }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+    <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2">
       <div className="text-xs text-slate-500">{label}</div>
       <div className="mt-1 text-lg font-semibold text-slate-950">{value ?? 0}</div>
     </div>

@@ -35,15 +35,15 @@ export default async function DashboardPage({
       <PageHeader title="Dashboard 总览" description="展示有效订单、销售趋势、每日潜客增加趋势和当前需要跟进的客户。" />
       <StatusNote configured={result.configured} error={result.error} />
 
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 inline-flex flex-wrap gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1 shadow-sm shadow-slate-200/60">
         {ranges.map(([value, label]) => (
           <Link
             key={value}
             href={`/dashboard?range=${value}`}
-            className={`rounded-md border px-3 py-2 text-sm ${
+            className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
               activeRange === value
-                ? "border-slate-950 bg-slate-950 text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                ? "bg-[#0f274a] text-white shadow-sm shadow-blue-900/20"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
             }`}
           >
             {label}
@@ -52,24 +52,24 @@ export default async function DashboardPage({
       </div>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <StatCard label="总销售额 RMB" value={formatRmb(data.totalSalesRmb)} hint="已排除取消/退款订单" />
+        <StatCard label="总销售额 RMB" value={formatRmb(data.totalSalesRmb)} hint="已排除取消/退款订单" tone="info" />
         <StatCard label="总订单数" value={formatNumber(data.totalOrders)} hint="已排除取消/退款订单" />
         <StatCard label="总销售数量" value={formatNumber(data.totalQuantity)} hint="订单总数量汇总" />
         <StatCard label="平均订单金额" value={formatRmb(data.averageOrderAmountRmb)} hint="总销售额 / 总订单数" />
       </section>
 
-      <section className="mt-6 rounded-lg border border-amber-200 bg-amber-50/70 p-5 shadow-sm shadow-amber-100/70">
+      <section className="mt-6 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-white to-amber-50 p-5 shadow-sm shadow-amber-100/80">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-amber-950">待发货订单</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-amber-950">待发货订单</h2>
             <p className="mt-1 text-sm text-amber-900">每天优先检查这里，避免漏发货或重复发货。列表按订单日期从早到晚显示。</p>
           </div>
           <Button href="/orders?pendingShipping=1" variant="warning">查看全部待发货</Button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <StatCard label="待发货订单数量" value={formatNumber(data.pendingShipping.count)} hint="未发货 / 备货中 / 部分发货" />
-          <StatCard label="待发货订单总销售额" value={formatRmb(data.pendingShipping.salesTotal)} hint="已排除取消/退款订单" />
-          <StatCard label="待发货订单总数量" value={formatNumber(data.pendingShipping.quantityTotal)} hint="待发货订单数量合计" />
+          <StatCard label="待发货订单数量" value={formatNumber(data.pendingShipping.count)} hint="未发货 / 备货中 / 部分发货" tone="warning" />
+          <StatCard label="待发货订单总销售额" value={formatRmb(data.pendingShipping.salesTotal)} hint="已排除取消/退款订单" tone="warning" />
+          <StatCard label="待发货订单总数量" value={formatNumber(data.pendingShipping.quantityTotal)} hint="待发货订单数量合计" tone="warning" />
         </div>
         <div className={`mt-4 ${tableShellClassName}`}>
           <table className="w-full min-w-[1240px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
@@ -129,8 +129,8 @@ export default async function DashboardPage({
         <DashboardCharts monthlySales={data.monthlySales} countrySales={data.countrySales} recentLeads={data.recentLeads} />
       </section>
 
-      <section className="mt-6 rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
-        <h2 className="text-base font-semibold">需要跟进客户列表</h2>
+      <section className="mt-6 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+        <h2 className="text-lg font-semibold tracking-tight">需要跟进客户列表</h2>
         <p className="mt-1 text-sm text-slate-500">此列表不受 Dashboard 时间范围影响，始终显示当前需要跟进的客户。</p>
         <div className={`mt-4 ${tableShellClassName}`}>
           <table className="w-full min-w-[980px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">

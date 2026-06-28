@@ -3,7 +3,7 @@ import { CsvExportButton } from "@/components/csv-export-button";
 import { MarkShippedForm } from "@/components/mark-shipped-form";
 import { PageHeader } from "@/components/page-header";
 import { StatusNote } from "@/components/status-note";
-import { Badge, Button, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
+import { Badge, Button, FilterBar, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 import { ShippingStatusBadge } from "@/components/shipping-status-badge";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 import { getOrderFilterOptions, getOrders } from "@/lib/data";
@@ -82,14 +82,15 @@ export default async function OrdersPage({
         <CsvExportButton filenamePrefix="orders" rows={exportRows} label="导出订单 CSV" />
       </div>
 
-      <form className="mb-5 grid gap-3 rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-200/50 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_auto_auto_auto]" action="/orders">
-        <label className="text-sm font-medium text-slate-700">
+      <FilterBar>
+      <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_auto_auto_auto]" action="/orders">
+        <label className={labelClassName}>
           搜索
           <input
             name="search"
             defaultValue={filters.search ?? ""}
             placeholder="客户名 / 联系方式 / 订单编号"
-            className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+            className={inputClassName}
           />
         </label>
         <FilterSelect label="国家/渠道" name="country" value={filters.country} options={filterOptions.data.countries} />
@@ -100,6 +101,7 @@ export default async function OrdersPage({
         <Button href="/orders?pendingShipping=1" variant="warning" className="self-end">待发货订单</Button>
         <Button href="/orders" variant="secondary" className="self-end">清空</Button>
       </form>
+      </FilterBar>
 
       <div className={tableShellClassName}>
         <table className="w-full min-w-[1700px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
@@ -142,7 +144,7 @@ export default async function OrdersPage({
           <tbody>
             {result.data.length ? (
               result.data.map((order) => (
-                <tr key={order.id} className={order.is_refund_or_cancelled ? "border-b border-slate-100 bg-rose-50/70" : tableRowClassName}>
+                <tr key={order.id} className={order.is_refund_or_cancelled ? "border-b border-slate-100 bg-rose-50/70 align-middle transition-colors hover:bg-rose-50" : tableRowClassName}>
                   <td className="px-4 py-3">{formatDate(order.order_date)}</td>
                   <td className="truncate px-4 py-3 font-medium" title={order.order_no}>{order.order_no}</td>
                   <td className="truncate px-4 py-3" title={order.customer_name ?? ""}>{order.customer_name}</td>
@@ -212,12 +214,12 @@ function FilterSelect({
   options: string[];
 }) {
   return (
-    <label className="text-sm font-medium text-slate-700">
+    <label className={labelClassName}>
       {label}
       <select
         name={name}
         defaultValue={value ?? ""}
-        className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+        className={inputClassName}
       >
         <option value="">全部</option>
         {options.map((option) => (

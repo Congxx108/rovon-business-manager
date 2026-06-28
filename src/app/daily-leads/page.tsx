@@ -65,8 +65,8 @@ export default async function DailyLeadsPage({
       {params.updated ? <Message tone="success" text="更新成功，该日期数据已刷新。" /> : null}
       {params.exists ? <ExistingDateNotice params={params} /> : null}
 
-      <details className="mb-5 rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50" open>
-        <summary className="cursor-pointer text-base font-semibold text-slate-950">展开/收起快速录入今日统计</summary>
+      <details className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70" open>
+        <summary className="cursor-pointer text-base font-semibold text-slate-950 transition hover:text-blue-700">展开/收起快速录入今日统计</summary>
         <p className="mt-2 text-sm text-slate-500">
           正常情况下只填累计数；总增加数、女包群增加数、双肩包群增加数会由系统自动计算。
         </p>

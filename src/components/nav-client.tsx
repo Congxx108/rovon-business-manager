@@ -16,7 +16,7 @@ export function SideNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="mt-8 space-y-1">
+    <nav className="mt-7 space-y-1.5">
       {navItems.map((item) => {
         const Icon = item.icon;
         const active = isActivePath(pathname, item.href);
@@ -24,11 +24,15 @@ export function SideNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition ${
-              active ? "bg-slate-950 text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+            className={`group flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition duration-150 ${
+              active
+                ? "bg-blue-50 text-blue-700 shadow-inner shadow-blue-100 ring-1 ring-blue-100"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
             }`}
           >
-            <Icon className="h-4 w-4" />
+            <span className={`grid h-7 w-7 place-items-center rounded-lg transition ${active ? "bg-blue-100" : "bg-slate-100 group-hover:bg-white"}`}>
+              <Icon className="h-4 w-4" />
+            </span>
             {item.label}
           </Link>
         );
@@ -49,8 +53,8 @@ export function MobileNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex h-9 shrink-0 items-center gap-2 rounded-md border px-3 text-sm ${
-              active ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 text-slate-700"
+            className={`flex h-9 shrink-0 items-center gap-2 rounded-lg border px-3 text-sm font-semibold transition ${
+              active ? "border-blue-700 bg-blue-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
             <Icon className="h-4 w-4" />

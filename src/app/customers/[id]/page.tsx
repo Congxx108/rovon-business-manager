@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { ShippingStatusBadge } from "@/components/shipping-status-badge";
@@ -62,8 +62,8 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         />
       </section>
 
-      <section className="mt-6 rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
-        <h2 className="text-base font-semibold">历史订单列表</h2>
+      <section className="mt-6 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+        <h2 className="text-lg font-semibold tracking-tight">历史订单列表</h2>
         <p className="mt-1 text-sm text-slate-500">
           匹配规则：有联系方式时按联系方式匹配；没有联系方式时按客户名 + 国家/渠道匹配。
         </p>
@@ -88,39 +88,39 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
             </colgroup>
             <thead className={tableHeadClassName}>
               <tr>
-                <th className="py-2 pr-4 font-medium">订单日期</th>
-                <th className="py-2 pr-4 font-medium">订单编号</th>
-                <th className="py-2 pr-4 font-medium">国家/渠道</th>
-                <th className="py-2 pr-4 font-medium">产品线</th>
-                <th className="py-2 pr-4 font-medium">数量</th>
-                <th className="py-2 pr-4 font-medium">销售额RMB</th>
-                <th className="py-2 pr-4 font-medium">订单状态</th>
-                <th className="py-2 pr-4 font-medium">付款状态</th>
-                <th className="py-2 pr-4 font-medium">发货状态</th>
-                <th className="py-2 pr-4 font-medium">物流方式</th>
-                <th className="py-2 pr-4 font-medium">物流/快运公司</th>
-                <th className="py-2 pr-4 font-medium">物流单号/货运单号</th>
-                <th className="py-2 pr-4 font-medium">发货日期</th>
-                <th className="py-2 pr-4 font-medium">取消/退款</th>
+                <th className="px-4 py-3 font-medium">订单日期</th>
+                <th className="px-4 py-3 font-medium">订单编号</th>
+                <th className="px-4 py-3 font-medium">国家/渠道</th>
+                <th className="px-4 py-3 font-medium">产品线</th>
+                <th className="px-4 py-3 font-medium">数量</th>
+                <th className="px-4 py-3 font-medium">销售额RMB</th>
+                <th className="px-4 py-3 font-medium">订单状态</th>
+                <th className="px-4 py-3 font-medium">付款状态</th>
+                <th className="px-4 py-3 font-medium">发货状态</th>
+                <th className="px-4 py-3 font-medium">物流方式</th>
+                <th className="px-4 py-3 font-medium">物流/快运公司</th>
+                <th className="px-4 py-3 font-medium">物流单号/货运单号</th>
+                <th className="px-4 py-3 font-medium">发货日期</th>
+                <th className="px-4 py-3 font-medium">取消/退款</th>
               </tr>
             </thead>
             <tbody>
                 {ordersResult.data.map((order) => (
                   <tr key={order.id} className={tableRowClassName}>
-                    <td className="py-3 pr-4">{formatDate(order.order_date)}</td>
-                    <td className="truncate py-3 pr-4 font-medium" title={order.order_no}>{order.order_no}</td>
-                    <td className="truncate py-3 pr-4" title={order.country ?? ""}>{order.country ?? "-"}</td>
-                    <td className="truncate py-3 pr-4" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
-                    <td className="py-3 pr-4 text-right">{formatNumber(order.quantity)}</td>
-                    <td className="py-3 pr-4 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb ?? 0))}</td>
-                    <td className="py-3 pr-4">{order.order_status}</td>
-                    <td className="py-3 pr-4">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0), order.payment_currency)}</td>
-                    <td className="py-3 pr-4"><ShippingStatusBadge value={order.shipping_status} /></td>
-                    <td className="truncate py-3 pr-4" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
-                    <td className="truncate py-3 pr-4" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
-                    <td className="truncate py-3 pr-4" title={order.tracking_no ?? ""}>{order.tracking_no ?? "-"}</td>
-                    <td className="py-3 pr-4">{formatDate(order.shipping_date)}</td>
-                    <td className="py-3 pr-4">{order.is_refund_or_cancelled ? <Badge tone="danger">取消/退款</Badge> : "-"}</td>
+                    <td className="px-4 py-3">{formatDate(order.order_date)}</td>
+                    <td className="truncate px-4 py-3 font-medium" title={order.order_no}>{order.order_no}</td>
+                    <td className="truncate px-4 py-3" title={order.country ?? ""}>{order.country ?? "-"}</td>
+                    <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
+                    <td className="px-4 py-3 text-right">{formatNumber(order.quantity)}</td>
+                    <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb ?? 0))}</td>
+                    <td className="px-4 py-3">{order.order_status}</td>
+                    <td className="px-4 py-3">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0), order.payment_currency)}</td>
+                    <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
+                    <td className="truncate px-4 py-3" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
+                    <td className="truncate px-4 py-3" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
+                    <td className="truncate px-4 py-3" title={order.tracking_no ?? ""}>{order.tracking_no ?? "-"}</td>
+                    <td className="px-4 py-3">{formatDate(order.shipping_date)}</td>
+                    <td className="px-4 py-3">{order.is_refund_or_cancelled ? <Badge tone="danger">取消/退款</Badge> : "-"}</td>
                   </tr>
                 ))}
             </tbody>
@@ -138,11 +138,11 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
 
 function InfoPanel({ title, items }: { title: string; items: Array<[string, string]> }) {
   return (
-    <section className="rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
-      <h2 className="text-base font-semibold">{title}</h2>
+    <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70 transition duration-200 hover:shadow-md hover:shadow-slate-200/70">
+      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
       <div className="mt-4 space-y-3">
         {items.map(([label, value]) => (
-          <div key={label} className="border-b border-slate-100 pb-2">
+          <div key={label} className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2">
             <div className="text-xs text-slate-500">{label}</div>
             <div className="mt-1 text-sm font-medium text-slate-950">{value}</div>
           </div>
@@ -156,3 +156,4 @@ function formatPaymentStatus(paymentStatus: string, depositAmount: number, payme
   const status = paymentStatus === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
   return paymentCurrency ? `${status} / ${paymentCurrency}` : status;
 }
+

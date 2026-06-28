@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
 import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
-import { Button, FormSection } from "@/components/ui";
+import { Button, FormSection, inputClassName, labelClassName } from "@/components/ui";
 import { markOrderCancelled, updateOrder } from "@/app/orders/actions";
 import { getOrderById, getOrderItemsByOrderId } from "@/lib/data";
 import { SHIPPING_METHODS, SHIPPING_STATUSES } from "@/lib/shipping";
@@ -41,7 +41,7 @@ export default async function EditOrderPage({
         />
       ) : null}
 
-      <form action={saveAction} className="max-w-none space-y-4">
+      <form action={saveAction} className="max-w-none space-y-5">
         <FormSection title="基础信息">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={order.order_date} />
@@ -63,7 +63,7 @@ export default async function EditOrderPage({
               defaultRmbPaymentMethod={order.rmb_payment_method}
               defaultPaymentRemark={order.payment_remark}
             />
-            <label className="flex items-center gap-2 self-end rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+            <label className="flex h-10 items-center gap-2 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
               <input
                 name="is_refund_or_cancelled"
                 type="checkbox"
@@ -91,7 +91,7 @@ export default async function EditOrderPage({
           </div>
         </FormSection>
 
-        <div className="sticky bottom-0 z-10 -mx-2 mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50/95 px-2 py-3 backdrop-blur">
+        <div className="sticky bottom-0 z-10 -mx-2 mt-6 flex flex-wrap justify-end gap-3 rounded-t-2xl border border-slate-200 bg-white/92 px-3 py-3 shadow-lg shadow-slate-900/5 backdrop-blur">
           <Button href="/orders" variant="secondary">返回订单列表</Button>
           <Button type="submit">保存订单</Button>
         </div>
@@ -136,12 +136,12 @@ function SelectField({
   emptyLabel?: string;
 }) {
   return (
-    <label className="block text-sm font-medium text-slate-700">
+    <label className={labelClassName}>
       {label}
       <select
         name={name}
         defaultValue={defaultValue ?? ""}
-        className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm shadow-slate-200/40 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+        className={inputClassName}
       >
         {emptyLabel ? <option value="">{emptyLabel}</option> : null}
         {options.map((option) => (

@@ -16,6 +16,7 @@ import {
 } from "@/lib/csv";
 import { dailyLeadImportSummary, mapDailyLeadImportRows, type ParsedDailyLeadImportRow } from "@/lib/imports";
 import { formatNumber } from "@/lib/format";
+import { labelClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 
 export function DailyLeadImportClient() {
   const [records, setRecords] = useState<CsvRecord[]>([]);
@@ -79,8 +80,8 @@ export function DailyLeadImportClient() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-md border border-slate-200 bg-white p-5">
-        <label className="block text-sm font-medium text-slate-700">
+      <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+        <label className={labelClassName}>
           CSV 文件
           <input type="file" accept=".csv,text/csv" onChange={handleFileChange} className="mt-2 block w-full text-sm text-slate-700" />
           <DownloadDailyLeadTemplateButton />
@@ -99,7 +100,7 @@ export function DailyLeadImportClient() {
             <SummaryCard label="缺少/错误行数" value={formatNumber(summary.errorRows)} />
           </div>
 
-          <form action={formAction} className="rounded-md border border-slate-200 bg-white p-5">
+          <form action={formAction} className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
             <textarea name="rows" value={JSON.stringify(rows)} readOnly hidden />
             <label className="mb-4 flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
               <input name="preserve_csv_increases" type="checkbox" defaultChecked className="mt-0.5 h-4 w-4 rounded border-blue-300" />
@@ -122,7 +123,7 @@ export function DailyLeadImportClient() {
               <button
                 type="submit"
                 disabled={!validRows.length || pending}
-                className="h-10 rounded-md bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="h-10 rounded-lg bg-[#0f274a] px-4 text-sm font-semibold text-white transition hover:bg-[#16365f] disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {pending ? "导入中..." : "确认导入每日潜客"}
               </button>
@@ -153,7 +154,7 @@ function DownloadDailyLeadTemplateButton() {
           "日期,客户,WhatsApp1,WhatsApp2,总增加数,女包群,增加数-女包群,书包群人数,增加数-双肩包群\r\n2026-06-27,3250,3200,1380,57,130,4,668,1\r\n",
         )
       }
-      className="mt-3 inline-flex h-9 items-center rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+      className="mt-3 inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
     >
       下载每日潜客导入模板
     </button>
@@ -162,14 +163,14 @@ function DownloadDailyLeadTemplateButton() {
 
 function CsvParseInfo({ result }: { result: CsvParseResult }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-5 text-sm">
+    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 text-sm shadow-sm shadow-slate-200/70">
       <div className="font-medium text-slate-950">CSV 识别结果</div>
       <div className="mt-3 text-slate-700">当前识别到的编码：{result.encoding}</div>
       <div className="mt-3">
         <div className="text-xs text-slate-500">成功识别到的字段映射</div>
         <div className="mt-2 flex flex-wrap gap-2">
           {result.matchedFields.map((item) => (
-            <span key={item.field} className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+            <span key={item.field} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
               {DAILY_LEAD_CSV_FIELD_LABELS[item.field as keyof typeof DAILY_LEAD_CSV_FIELD_LABELS] ?? item.field} = {item.header}
             </span>
           ))}
@@ -196,7 +197,7 @@ function ImportConfirmDetails({
   const fieldNames = parseResult?.matchedFields.map((item) => DAILY_LEAD_CSV_FIELD_LABELS[item.field as keyof typeof DAILY_LEAD_CSV_FIELD_LABELS] ?? item.field) ?? [];
 
   return (
-    <div className="mb-5 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm">
+    <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm">
       <div className="font-medium text-slate-950">导入前确认</div>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <ConfirmLine label="识别到的字段映射" value={fieldNames.length ? fieldNames.join("、") : "-"} />
@@ -248,7 +249,7 @@ function ErrorRows({ rows }: { rows: ParsedDailyLeadImportRow[] }) {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-4">
+    <div className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200/60">
       <div className="text-xs text-slate-500">{label}</div>
       <div className="mt-2 text-lg font-semibold">{value}</div>
     </div>
@@ -287,9 +288,9 @@ function DifferenceTable({ title, differences }: { title: string; differences: N
 
 function PreviewTable({ rows }: { rows: ParsedDailyLeadImportRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white">
+    <div className={tableShellClassName}>
       <table className="w-full min-w-[980px] text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
+        <thead className={tableHeadClassName}>
           <tr>
             <th className="px-4 py-3 font-medium">行号</th>
             <th className="px-4 py-3 font-medium">日期</th>
@@ -306,7 +307,7 @@ function PreviewTable({ rows }: { rows: ParsedDailyLeadImportRow[] }) {
         </thead>
         <tbody>
           {rows.slice(0, 50).map((row) => (
-            <tr key={row.rowNumber} className="border-b border-slate-100">
+            <tr key={row.rowNumber} className={tableRowClassName}>
               <td className="px-4 py-3">{row.rowNumber}</td>
               <td className="px-4 py-3">{row.stat_date || "-"}</td>
               <td className="px-4 py-3">{formatNumber(row.facebook_leads)}</td>

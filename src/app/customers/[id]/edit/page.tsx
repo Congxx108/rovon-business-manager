@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
 import { PageHeader } from "@/components/page-header";
-import { Button, FormSection } from "@/components/ui";
+import { Button, FormSection, inputClassName, labelClassName } from "@/components/ui";
 import { updateCustomerFollowFields } from "@/app/customers/actions";
 import { getCustomerById } from "@/lib/data";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
@@ -33,8 +33,8 @@ export default async function EditCustomerPage({
       {error ? <Message tone="error" text={error} /> : null}
       {saved ? <Message tone="success" text="客户跟进信息已保存。" /> : null}
 
-      <section className="mb-5 rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50">
-        <h2 className="text-base font-semibold">只读客户统计</h2>
+      <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+        <h2 className="text-base font-semibold tracking-tight">只读客户统计</h2>
         <p className="mt-1 text-sm text-slate-500">这些字段由订单自动汇总生成，避免手工改乱历史统计。</p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <ReadOnly label="客户名" value={customer.name} />
@@ -57,12 +57,12 @@ export default async function EditCustomerPage({
         <FormSection title="人工跟进字段" description="这里只维护跟进记录，不影响订单汇总出来的客户统计。">
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="最后跟进日期" name="last_follow_date" type="date" defaultValue={customer.last_follow_date ?? ""} />
-            <label className="block text-sm font-medium text-slate-700">
+            <label className={labelClassName}>
               最后跟进结果
               <select
                 name="last_follow_result"
                 defaultValue={customer.last_follow_result ?? ""}
-                className="mt-2 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm shadow-slate-200/40 outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+                className={inputClassName}
               >
                 <option value="">未填写</option>
                 {followResultOptions.map((option) => (
@@ -89,7 +89,7 @@ export default async function EditCustomerPage({
 
 function ReadOnly({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+    <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3">
       <div className="text-xs text-slate-500">{label}</div>
       <div className="mt-1 text-sm font-medium text-slate-900">{value}</div>
     </div>

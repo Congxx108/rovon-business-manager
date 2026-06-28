@@ -11,6 +11,7 @@ import {
 } from "@/lib/csv";
 import { mapOrderImportRows, orderImportSummary, type ParsedOrderImportRow } from "@/lib/imports";
 import { formatNumber, formatRmb } from "@/lib/format";
+import { inputClassName, labelClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 
 export function OrderImportClient() {
   const [records, setRecords] = useState<CsvRecord[]>([]);
@@ -79,28 +80,28 @@ export function OrderImportClient() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-md border border-slate-200 bg-white p-5">
+      <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
         <div className="grid gap-4 md:grid-cols-3">
-          <label className="block text-sm font-medium text-slate-700">
+          <label className={labelClassName}>
             CSV 文件
             <input type="file" accept=".csv,text/csv" onChange={handleFileChange} className="mt-2 block w-full text-sm text-slate-700" />
             <DownloadOrderTemplateButton />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className={labelClassName}>
             默认国家/渠道
             <input
               value={defaultCountry}
               onChange={(event) => setDefaultCountry(event.target.value)}
               placeholder="CSV 没有国家列时使用"
-              className="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+              className={inputClassName}
             />
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className={labelClassName}>
             默认产品线
             <input
               value={defaultProductLine}
               onChange={(event) => setDefaultProductLine(event.target.value)}
-              className="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+              className={inputClassName}
             />
           </label>
         </div>
@@ -121,7 +122,7 @@ export function OrderImportClient() {
             ]}
           />
 
-          <form action={formAction} className="rounded-md border border-slate-200 bg-white p-5">
+          <form action={formAction} className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
             <textarea name="rows" value={JSON.stringify(rows)} readOnly hidden />
             <ImportConfirmDetails
               parseResult={parseResult}
@@ -136,7 +137,7 @@ export function OrderImportClient() {
               <button
                 type="submit"
                 disabled={!validRows.length || pending}
-                className="h-10 rounded-md bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="h-10 rounded-lg bg-[#0f274a] px-4 text-sm font-semibold text-white transition hover:bg-[#16365f] disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {pending ? "导入中..." : "确认导入订单"}
               </button>
@@ -167,7 +168,7 @@ function DownloadOrderTemplateButton() {
           "时间,Whatsapp号码,姓名,销售额,个数,备注,合同号,国家/渠道,产品线,发货状态,物流方式,物流/快运公司,物流单号,发货日期,发货备注\r\n2026-06-15,234111111111,Ada Test,6000,120,示例订单,EXAMPLE-001,尼日利亚,女包,未发货,,,,,\r\n",
         )
       }
-      className="mt-3 inline-flex h-9 items-center rounded-md border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+      className="mt-3 inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
     >
       下载订单导入模板
     </button>
@@ -178,14 +179,14 @@ function CsvParseInfo({ result, rows }: { result: CsvParseResult; rows: ParsedOr
   const hasScientificContact = rows.some((row) => row.contactWarning);
 
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-5 text-sm">
+    <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-5 text-sm shadow-sm shadow-slate-200/70">
       <div className="font-medium text-slate-950">CSV 识别结果</div>
       <div className="mt-3 text-slate-700">当前识别到的编码：{result.encoding}</div>
       <div className="mt-3">
         <div className="text-xs text-slate-500">成功识别到的字段映射</div>
         <div className="mt-2 flex flex-wrap gap-2">
           {result.matchedFields.map((item) => (
-            <span key={item.field} className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+            <span key={item.field} className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
               {ORDER_CSV_FIELD_LABELS[item.field as keyof typeof ORDER_CSV_FIELD_LABELS] ?? item.field} = {item.header}
             </span>
           ))}
@@ -222,7 +223,7 @@ function ImportConfirmDetails({
   const usesDefaultProductLine = Boolean(defaultProductLine.trim()) && rows.some((row) => row.errors.length === 0 && row.product_line === defaultProductLine.trim());
 
   return (
-    <div className="mb-5 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm">
+    <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm">
       <div className="font-medium text-slate-950">导入前确认</div>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <ConfirmLine label="识别到的字段映射" value={fieldNames.length ? fieldNames.join("、") : "-"} />
@@ -282,7 +283,7 @@ function ImportSummaryCards({ items }: { items: Array<[string, string]> }) {
   return (
     <div className="grid gap-3 md:grid-cols-5">
       {items.map(([label, value]) => (
-        <div key={label} className="rounded-md border border-slate-200 bg-white p-4">
+        <div key={label} className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200/60">
           <div className="text-xs text-slate-500">{label}</div>
           <div className="mt-2 text-lg font-semibold">{value}</div>
         </div>
@@ -293,9 +294,9 @@ function ImportSummaryCards({ items }: { items: Array<[string, string]> }) {
 
 function PreviewTable({ rows }: { rows: ParsedOrderImportRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white">
+    <div className={tableShellClassName}>
       <table className="w-full min-w-[1080px] text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs text-slate-500">
+        <thead className={tableHeadClassName}>
           <tr>
             <th className="px-4 py-3 font-medium">行号</th>
             <th className="px-4 py-3 font-medium">日期</th>
@@ -313,7 +314,7 @@ function PreviewTable({ rows }: { rows: ParsedOrderImportRow[] }) {
         </thead>
         <tbody>
           {rows.slice(0, 50).map((row) => (
-            <tr key={row.rowNumber} className="border-b border-slate-100">
+            <tr key={row.rowNumber} className={tableRowClassName}>
               <td className="px-4 py-3">{row.rowNumber}</td>
               <td className="px-4 py-3">{row.order_date || "-"}</td>
               <td className="px-4 py-3">{row.order_no}</td>

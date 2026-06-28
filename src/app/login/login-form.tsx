@@ -2,31 +2,31 @@
 
 import { useActionState } from "react";
 import { loginAction, type LoginState } from "@/app/auth/actions";
-import { Button } from "@/components/ui";
+import { Button, inputClassName, labelClassName } from "@/components/ui";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState<LoginState, FormData>(loginAction, {});
 
   return (
     <form action={action} className="mt-6 space-y-4">
-      <label className="block text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         邮箱
         <input
           name="email"
           type="email"
           required
           autoComplete="email"
-          className="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+          className={`${inputClassName} h-11`}
         />
       </label>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         密码
         <input
           name="password"
           type="password"
           required
           autoComplete="current-password"
-          className="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm outline-none focus:border-slate-950 focus:ring-2 focus:ring-slate-950/10"
+          className={`${inputClassName} h-11`}
         />
       </label>
 
