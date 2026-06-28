@@ -43,6 +43,7 @@ export default async function OrdersPage({
     数量: order.quantity,
     销售额RMB: order.sales_amount_rmb,
     付款状态: order.payment_status,
+    定金金额RMB: order.deposit_amount_rmb ?? 0,
     订单状态: order.order_status,
     "是否取消/退款": order.is_refund_or_cancelled ? "是" : "否",
     发货状态: order.shipping_status,
@@ -147,7 +148,7 @@ export default async function OrdersPage({
                   <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatNumber(order.quantity)}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb))}</td>
-                  <td className="px-4 py-3">{order.payment_status}</td>
+                  <td className="px-4 py-3">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0))}</td>
                   <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
                   <td className="truncate px-4 py-3" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
                   <td className="truncate px-4 py-3" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
@@ -224,4 +225,9 @@ function FilterSelect({
       </select>
     </label>
   );
+}
+
+function formatPaymentStatus(paymentStatus: string, depositAmount: number) {
+  if (paymentStatus === "定金") return `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim();
+  return "已付全款";
 }

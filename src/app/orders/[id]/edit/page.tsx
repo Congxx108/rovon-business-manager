@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
+import { ContactCountryFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormSection } from "@/components/ui";
 import { markOrderCancelled, updateOrder } from "@/app/orders/actions";
-import { getOrderById } from "@/lib/data";
+import { getOrderById, getOrderItemsByOrderId } from "@/lib/data";
 import { SHIPPING_METHODS, SHIPPING_STATUSES } from "@/lib/shipping";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export default async function EditOrderPage({
   const result = await getOrderById(id);
   const order = result.data;
   if (!order) notFound();
+  const orderItemsResult = await getOrderItemsByOrderId(order);
 
   const saveAction = updateOrder.bind(null, id);
   const cancelAction = markOrderCancelled.bind(null, id);
@@ -30,6 +32,7 @@ export default async function EditOrderPage({
       <PageHeader title="编辑订单" description="修改订单后会自动刷新客户统计。删除订单暂不做物理删除，请使用取消/退款标记。" />
 
       {error ? <Message tone="error" text={error} /> : null}
+      {orderItemsResult.error ? <Message tone="error" text={`订单明细读取失败：${orderItemsResult.error}`} /> : null}
       {saved ? (
         <Message
           tone="success"
@@ -44,33 +47,27 @@ export default async function EditOrderPage({
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={order.order_date} />
             <FormField label="订单编号" name="order_no" required defaultValue={order.order_no} />
             <FormField label="客户名" name="customer_name" defaultValue={order.customer_name} />
-            <FormField label="联系方式 / WhatsApp" name="contact" defaultValue={order.contact ?? ""} />
-            <FormField label="国家/渠道" name="country" required defaultValue={order.country ?? ""} />
+            <ContactCountryFields defaultContact={order.contact} defaultCountry={order.country} />
           </div>
         </FormSection>
 
         <FormSection title="产品与金额">
-          <div className="grid gap-3 md:grid-cols-3">
-            <FormField label="产品线" name="product_line" required defaultValue={order.product_line ?? ""} />
-            <FormField label="数量" name="quantity" type="number" required min={0} defaultValue={order.quantity} />
-            <FormField label="销售额RMB" name="sales_amount_rmb" type="number" required min={0} step="0.01" defaultValue={order.sales_amount_rmb} />
-          </div>
+          <OrderItemsInput defaultItems={orderItemsResult.data} />
         </FormSection>
 
         <FormSection title="状态与备注">
           <div className="grid gap-3 md:grid-cols-3">
-            <FormField label="订单状态" name="order_status" defaultValue={order.order_status} />
-            <FormField label="付款状态" name="payment_status" defaultValue={order.payment_status} />
+            <PaymentFields defaultPaymentStatus={order.payment_status} defaultDepositAmount={order.deposit_amount_rmb} />
+            <label className="flex items-center gap-2 self-end rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+              <input
+                name="is_refund_or_cancelled"
+                type="checkbox"
+                defaultChecked={order.is_refund_or_cancelled}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              是否取消/退款
+            </label>
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-            <input
-              name="is_refund_or_cancelled"
-              type="checkbox"
-              defaultChecked={order.is_refund_or_cancelled}
-              className="h-4 w-4 rounded border-slate-300"
-            />
-            是否取消/退款
-          </label>
           <div className="mt-3">
             <FormField label="备注" name="remark" textarea rows={3} defaultValue={order.remark ?? ""} />
           </div>

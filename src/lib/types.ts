@@ -11,6 +11,7 @@ export type Order = {
   sales_amount_effective_rmb: number;
   order_status: string;
   payment_status: string;
+  deposit_amount_rmb: number;
   shipping_status: string;
   shipping_method: string | null;
   shipping_company: string | null;
@@ -19,6 +20,17 @@ export type Order = {
   shipping_remark: string | null;
   is_refund_or_cancelled: boolean;
   remark: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrderItem = {
+  id: string;
+  order_id: string;
+  product_line: string;
+  quantity: number;
+  sales_amount_rmb: number;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 };

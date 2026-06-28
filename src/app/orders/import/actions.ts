@@ -63,6 +63,7 @@ export async function importOrdersAction(_previousState: OrderImportState | null
     sales_amount_rmb: row.sales_amount_rmb,
     order_status: "已成交",
     payment_status: "已付全款",
+    deposit_amount_rmb: 0,
     shipping_status: row.shipping_status,
     shipping_method: row.shipping_method,
     shipping_company: row.shipping_company,
@@ -73,8 +74,34 @@ export async function importOrdersAction(_previousState: OrderImportState | null
     remark: row.remark,
   }));
 
-  const { error } = await supabase.from("orders").upsert(payload, { onConflict: "order_no" });
+  const { data: upsertedOrders, error } = await supabase.from("orders").upsert(payload, { onConflict: "order_no" }).select("id,order_no");
   if (error) return { ok: false, message: `订单导入失败：${error.message}` };
+
+  const orderIds = (upsertedOrders ?? []).map((order) => order.id).filter(Boolean);
+  if (orderIds.length) {
+    const { error: deleteItemsError } = await supabase.from("order_items").delete().in("order_id", orderIds);
+    if (deleteItemsError) return { ok: false, message: `订单明细更新失败：${deleteItemsError.message}` };
+
+    const orderIdByNo = new Map((upsertedOrders ?? []).map((order) => [order.order_no, order.id]));
+    const itemPayload = validRows
+      .map((row) => {
+        const orderId = orderIdByNo.get(row.order_no);
+        if (!orderId) return null;
+        return {
+          order_id: orderId,
+          product_line: row.product_line ?? "女包",
+          quantity: row.quantity,
+          sales_amount_rmb: row.sales_amount_rmb,
+          sort_order: 0,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    if (itemPayload.length) {
+      const { error: insertItemsError } = await supabase.from("order_items").insert(itemPayload);
+      if (insertItemsError) return { ok: false, message: `订单明细写入失败：${insertItemsError.message}` };
+    }
+  }
 
   await refreshCustomersFromOrders();
 

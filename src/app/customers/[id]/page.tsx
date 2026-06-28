@@ -114,7 +114,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
                     <td className="py-3 pr-4 text-right">{formatNumber(order.quantity)}</td>
                     <td className="py-3 pr-4 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb ?? 0))}</td>
                     <td className="py-3 pr-4">{order.order_status}</td>
-                    <td className="py-3 pr-4">{order.payment_status}</td>
+                    <td className="py-3 pr-4">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0))}</td>
                     <td className="py-3 pr-4"><ShippingStatusBadge value={order.shipping_status} /></td>
                     <td className="truncate py-3 pr-4" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
                     <td className="truncate py-3 pr-4" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
@@ -150,4 +150,9 @@ function InfoPanel({ title, items }: { title: string; items: Array<[string, stri
       </div>
     </section>
   );
+}
+
+function formatPaymentStatus(paymentStatus: string, depositAmount: number) {
+  if (paymentStatus === "定金") return `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim();
+  return "已付全款";
 }

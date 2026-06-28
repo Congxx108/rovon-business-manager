@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
+import { ContactCountryFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormSection } from "@/components/ui";
 import { createOrder } from "@/app/orders/actions";
@@ -41,28 +42,22 @@ export default async function NewOrderPage({
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={todayString()} />
             <FormField label="订单编号" name="order_no" placeholder="不填则自动生成" />
             <FormField label="客户名" name="customer_name" placeholder="客户名或联系方式至少填一个" />
-            <FormField label="联系方式 / WhatsApp" name="contact" />
-            <FormField label="国家/渠道" name="country" required placeholder="例如 Ghana / WhatsApp" />
+            <ContactCountryFields />
           </div>
         </FormSection>
 
         <FormSection title="产品与金额">
-          <div className="grid gap-3 md:grid-cols-3">
-            <FormField label="产品线" name="product_line" required defaultValue="女包" />
-            <FormField label="数量" name="quantity" type="number" required defaultValue={0} min={0} />
-            <FormField label="销售额RMB" name="sales_amount_rmb" type="number" required defaultValue={0} min={0} step="0.01" />
-          </div>
+          <OrderItemsInput />
         </FormSection>
 
         <FormSection title="状态与备注" description="取消/退款订单会保留记录，但不计入销售、数量和客户统计。">
           <div className="grid gap-3 md:grid-cols-3">
-            <FormField label="订单状态" name="order_status" defaultValue="已成交" />
-            <FormField label="付款状态" name="payment_status" defaultValue="已付全款" />
+            <PaymentFields />
+            <label className="flex items-center gap-2 self-end rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700">
+              <input name="is_refund_or_cancelled" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
+              是否取消/退款
+            </label>
           </div>
-          <label className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-            <input name="is_refund_or_cancelled" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
-            是否取消/退款
-          </label>
           <div className="mt-3">
           <FormField label="备注" name="remark" textarea rows={3} />
           </div>

@@ -1,6 +1,6 @@
 import { getSupabaseAdminClient, isSupabaseConfigured } from "@/lib/supabase/admin";
 import { PENDING_SHIPPING_STATUSES, SHIPPING_STATUSES } from "@/lib/shipping";
-import type { Customer, DailyLead, Order } from "@/lib/types";
+import type { Customer, DailyLead, Order, OrderItem } from "@/lib/types";
 
 export type DataResult<T> = {
   data: T;
@@ -80,6 +80,62 @@ export async function getOrderById(id: string): Promise<DataResult<Order | null>
 
   if (error) return emptyResult(null, error.message);
   return emptyResult(data as Order);
+}
+
+export async function getOrderItemsByOrderId(order: Order): Promise<DataResult<OrderItem[]>> {
+  if (!isSupabaseConfigured()) {
+    return emptyResult([
+      {
+        id: "",
+        order_id: order.id,
+        product_line: order.product_line ?? "女包",
+        quantity: order.quantity,
+        sales_amount_rmb: order.sales_amount_rmb,
+        sort_order: 0,
+        created_at: "",
+        updated_at: "",
+      },
+    ]);
+  }
+
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("order_items")
+    .select("*")
+    .eq("order_id", order.id)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return emptyResult([
+      {
+        id: "",
+        order_id: order.id,
+        product_line: order.product_line ?? "女包",
+        quantity: order.quantity,
+        sales_amount_rmb: order.sales_amount_rmb,
+        sort_order: 0,
+        created_at: "",
+        updated_at: "",
+      },
+    ], error.message);
+  }
+
+  const items = (data ?? []) as OrderItem[];
+  if (items.length) return emptyResult(items);
+
+  return emptyResult([
+    {
+      id: "",
+      order_id: order.id,
+      product_line: order.product_line ?? "女包",
+      quantity: order.quantity,
+      sales_amount_rmb: order.sales_amount_rmb,
+      sort_order: 0,
+      created_at: "",
+      updated_at: "",
+    },
+  ]);
 }
 
 export async function getOrderFilterOptions(): Promise<DataResult<OrderFilterOptions>> {
