@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/page-header";
 import { Button, FormSection, inputClassName, labelClassName } from "@/components/ui";
 import { updateCustomerFollowFields } from "@/app/customers/actions";
 import { getCustomerById } from "@/lib/data";
+import { countryOptionsWithCurrent } from "@/lib/countries";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -25,35 +26,50 @@ export default async function EditCustomerPage({
   if (!customer) notFound();
 
   const saveAction = updateCustomerFollowFields.bind(null, id);
+  const countryOptions = countryOptionsWithCurrent(customer.country);
 
   return (
     <AppShell>
-      <PageHeader title="客户跟进编辑" description="客户统计字段来自订单自动汇总，只能编辑人工跟进字段。" />
+      <PageHeader title="客户跟进编辑" description="可修正客户名、国家/渠道和人工跟进记录；销售额、订单数等统计字段仍来自订单汇总。" />
 
       {error ? <Message tone="error" text={error} /> : null}
-      {saved ? <Message tone="success" text="客户跟进信息已保存。" /> : null}
+      {saved ? <Message tone="success" text="客户信息已保存。" /> : null}
 
-      <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
-        <h2 className="text-base font-semibold tracking-tight">只读客户统计</h2>
-        <p className="mt-1 text-sm text-slate-500">这些字段由订单自动汇总生成，避免手工改乱历史统计。</p>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <ReadOnly label="客户名" value={customer.name} />
-          <ReadOnly label="联系方式" value={customer.contact ?? "-"} />
-          <ReadOnly label="国家/渠道" value={customer.country ?? "-"} />
-          <ReadOnly label="首单日期" value={formatDate(customer.first_order_date)} />
-          <ReadOnly label="最近下单日期" value={formatDate(customer.last_order_date)} />
-          <ReadOnly label="历史订单数" value={formatNumber(customer.total_orders)} />
-          <ReadOnly label="历史购买总数量" value={formatNumber(customer.total_quantity)} />
-          <ReadOnly label="历史销售额RMB" value={formatRmb(Number(customer.total_sales_rmb ?? 0))} />
-          <ReadOnly label="复购状态" value={customer.repurchase_status} />
-          <ReadOnly label="客户价值等级" value={customer.customer_value_level} />
-          <ReadOnly label="客户复购潜力" value={customer.repurchase_potential} />
-          <ReadOnly label="跟进优先级" value={customer.follow_priority} />
-          <ReadOnly label="建议跟进动作" value={customer.follow_suggestion ?? "-"} />
-        </div>
-      </section>
+      <form action={saveAction} className="space-y-5">
+        <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+          <h2 className="text-base font-semibold tracking-tight">客户基础信息与统计</h2>
+          <p className="mt-1 text-sm text-slate-500">客户名和国家/渠道可人工修正；联系方式和订单统计保持只读，避免改乱历史订单数据。</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <label className={labelClassName}>
+              客户名<span className="ml-1 text-rose-600">*</span>
+              <input name="name" required defaultValue={customer.name} className={inputClassName} />
+            </label>
+            <ReadOnly label="联系方式" value={customer.contact ?? "-"} />
+            <label className={labelClassName}>
+              国家/渠道
+              <select name="country" defaultValue={customer.country ?? ""} className={inputClassName}>
+                <option value="">未填写</option>
+                {countryOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <ReadOnly label="首单日期" value={formatDate(customer.first_order_date)} />
+            <ReadOnly label="最近下单日期" value={formatDate(customer.last_order_date)} />
+            <ReadOnly label="历史订单数" value={formatNumber(customer.total_orders)} />
+            <ReadOnly label="历史购买总数量" value={formatNumber(customer.total_quantity)} />
+            <ReadOnly label="历史销售额RMB" value={formatRmb(Number(customer.total_sales_rmb ?? 0))} />
+            <ReadOnly label="复购状态" value={customer.repurchase_status} />
+            <ReadOnly label="客户价值等级" value={customer.customer_value_level} />
+            <ReadOnly label="客户复购潜力" value={customer.repurchase_potential} />
+            <ReadOnly label="跟进优先级" value={customer.follow_priority} />
+            <ReadOnly label="建议跟进动作" value={customer.follow_suggestion ?? "-"} />
+          </div>
+        </section>
 
-      <form action={saveAction} className="max-w-3xl space-y-5">
+        <div className="max-w-3xl space-y-5">
         <FormSection title="人工跟进字段" description="这里只维护跟进记录，不影响订单汇总出来的客户统计。">
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="最后跟进日期" name="last_follow_date" type="date" defaultValue={customer.last_follow_date ?? ""} />
@@ -81,6 +97,7 @@ export default async function EditCustomerPage({
         <div className="mt-6 flex justify-end gap-3">
           <Button href="/customers" variant="secondary">返回客户列表</Button>
           <Button type="submit">保存跟进信息</Button>
+        </div>
         </div>
       </form>
     </AppShell>
