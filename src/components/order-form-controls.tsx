@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { searchOrderCustomers, type OrderCustomerSuggestion } from "@/app/orders/actions";
 import { Button, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, textareaClassName } from "@/components/ui";
 import { detectCountryFromContact } from "@/lib/country-detection";
@@ -29,12 +29,17 @@ export function CustomerAutocompleteFields({
   const [countryTouched, setCountryTouched] = useState(Boolean(defaultCountry));
   const [suggestions, setSuggestions] = useState<OrderCustomerSuggestion[]>([]);
   const [open, setOpen] = useState(false);
+  const [activeField, setActiveField] = useState<"name" | "contact" | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const detected = detectCountryFromContact(contact);
-  const searchText = contact.trim().length >= 2 ? contact.trim() : customerName.trim();
+  const activeSearchText = activeField === "contact" ? contact.trim() : activeField === "name" ? customerName.trim() : "";
+  const searchText = activeSearchText || (contact.trim().length >= 2 ? contact.trim() : customerName.trim());
   const visibleSuggestions = open && searchText.length >= 2 ? suggestions : [];
 
   useEffect(() => {
-    if (searchText.length < 2) return;
+    if (searchText.length < 2) {
+      return;
+    }
     let cancelled = false;
     const timer = window.setTimeout(() => {
       searchOrderCustomers(searchText).then((results) => {
@@ -51,6 +56,29 @@ export function CustomerAutocompleteFields({
     };
   }, [searchText]);
 
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setActiveField(null);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setActiveField(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   function updateCountry(nextCountry: string, touched: boolean) {
     setCountry(nextCountry);
     setCountryTouched(touched);
@@ -62,34 +90,49 @@ export function CustomerAutocompleteFields({
     setContact(customer.contact ?? "");
     updateCountry(customer.country ?? "", true);
     setOpen(false);
+    setActiveField(null);
   }
 
   return (
-    <>
-      <label className={labelClassName}>
-        客户名
-        <input
-          name="customer_name"
-          value={customerName}
-          onChange={(event) => {
-            setCustomerName(event.target.value);
-            setOpen(true);
-          }}
-          placeholder="输入客户名可匹配老客户"
-          className={inputClassName}
-        />
-      </label>
+    <div ref={rootRef} className="contents">
+      <div className="relative">
+        <label className={labelClassName}>
+          客户名
+          <input
+            name="customer_name"
+            value={customerName}
+            onFocus={() => {
+              setActiveField("name");
+              if (customerName.trim().length >= 2) setOpen(true);
+            }}
+            onChange={(event) => {
+              const nextName = event.target.value;
+              setCustomerName(nextName);
+              setActiveField("name");
+              setOpen(nextName.trim().length >= 2);
+            }}
+            placeholder="输入客户名可匹配老客户"
+            className={inputClassName}
+          />
+        </label>
+        {activeField === "name" ? <CustomerDropdown customers={visibleSuggestions} onChoose={chooseCustomer} /> : null}
+      </div>
       <div className="relative">
         <label className={labelClassName}>
           联系方式 / WhatsApp
           <input
             name="contact"
             value={contact}
+            onFocus={() => {
+              setActiveField("contact");
+              if (contact.trim().length >= 2) setOpen(true);
+            }}
             onChange={(event) => {
               const nextContact = event.target.value;
               const nextDetected = detectCountryFromContact(nextContact);
               setContact(nextContact);
-              setOpen(true);
+              setActiveField("contact");
+              setOpen(nextContact.trim().length >= 2);
               if (nextDetected && (!countryTouched || !country || country === lastDetected)) {
                 updateCountry(nextDetected, false);
                 setLastDetected(nextDetected);
@@ -99,28 +142,7 @@ export function CustomerAutocompleteFields({
             className={inputClassName}
           />
         </label>
-        {visibleSuggestions.length ? (
-          <div className="absolute z-20 mt-2 max-h-72 w-[min(720px,90vw)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/10">
-            {visibleSuggestions.map((customer) => (
-              <button
-                key={customer.id}
-                type="button"
-                onClick={() => chooseCustomer(customer)}
-                className="block w-full rounded-xl px-3 py-2.5 text-left text-sm transition hover:bg-blue-50/60"
-              >
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-medium text-slate-950">
-                  <span>{customer.name}</span>
-                  <span className="text-slate-500">{customer.contact ?? "-"}</span>
-                  <span className="text-slate-500">{customer.country ?? "-"}</span>
-                </div>
-                <div className="mt-1 text-xs text-slate-500">
-                  最近下单 {formatDate(customer.last_order_date)} · 历史订单 {formatNumber(customer.total_orders)} · 历史销售{" "}
-                  {formatRmb(Number(customer.total_sales_rmb ?? 0))}
-                </div>
-              </button>
-            ))}
-          </div>
-        ) : null}
+        {activeField === "contact" ? <CustomerDropdown customers={visibleSuggestions} onChoose={chooseCustomer} /> : null}
       </div>
       <label className={labelClassName}>
         国家/渠道<span className="ml-1 text-rose-600">*</span>
@@ -134,7 +156,41 @@ export function CustomerAutocompleteFields({
         />
         {detected ? <span className="mt-1 block text-xs text-slate-500">已根据联系方式识别：{detected}，可手动修改。</span> : null}
       </label>
-    </>
+    </div>
+  );
+}
+
+function CustomerDropdown({
+  customers,
+  onChoose,
+}: {
+  customers: OrderCustomerSuggestion[];
+  onChoose: (customer: OrderCustomerSuggestion) => void;
+}) {
+  if (!customers.length) return null;
+
+  return (
+    <div className="absolute left-0 right-0 top-full z-[100] mt-2 max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/12">
+      {customers.map((customer) => (
+        <button
+          key={customer.id}
+          type="button"
+          onClick={() => onChoose(customer)}
+          className="block w-full rounded-xl px-3 py-2 text-left text-sm transition hover:bg-blue-50/70"
+        >
+          <div className="flex min-w-0 items-center gap-2 font-semibold text-slate-950">
+            <span className="truncate">{customer.name}</span>
+            <span className="shrink-0 text-xs font-medium text-slate-500">{customer.country ?? "-"}</span>
+          </div>
+          <div className="mt-1 truncate text-xs text-slate-500">{customer.contact ?? "-"}</div>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+            <span>最近下单 {formatDate(customer.last_order_date)}</span>
+            <span>历史订单 {formatNumber(customer.total_orders)}</span>
+            <span>历史销售 {formatRmb(Number(customer.total_sales_rmb ?? 0))}</span>
+          </div>
+        </button>
+      ))}
+    </div>
   );
 }
 

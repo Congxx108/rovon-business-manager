@@ -112,7 +112,17 @@ export default async function DashboardPage({
                     <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_effective_rmb ?? order.sales_amount_rmb ?? 0))}</td>
                     <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
                     <td className="px-4 py-3"><Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button></td>
-                    <td className="px-4 py-3"><MarkShippedForm orderId={order.id} returnTo="/dashboard" /></td>
+                    <td className="px-4 py-3">
+                      <MarkShippedForm
+                        orderId={order.id}
+                        returnTo="/dashboard"
+                        orderNo={order.order_no}
+                        customerName={order.customer_name}
+                        country={order.country}
+                        quantity={order.quantity}
+                        salesAmountRmb={Number(order.sales_amount_effective_rmb ?? order.sales_amount_rmb ?? 0)}
+                      />
+                    </td>
                   </tr>
                 ))
               ) : (

@@ -168,7 +168,16 @@ export default async function OrdersPage({
                   <td className="px-4 py-3">
                     <div className="flex min-w-[170px] flex-wrap gap-2">
                       <Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button>
-                      {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? <MarkShippedForm orderId={order.id} /> : null}
+                      {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
+                        <MarkShippedForm
+                          orderId={order.id}
+                          orderNo={order.order_no}
+                          customerName={order.customer_name}
+                          country={order.country}
+                          quantity={order.quantity}
+                          salesAmountRmb={Number(order.sales_amount_rmb ?? 0)}
+                        />
+                      ) : null}
                     </div>
                   </td>
                 </tr>
