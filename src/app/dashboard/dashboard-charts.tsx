@@ -18,6 +18,7 @@ import { formatNumber, formatRmb } from "@/lib/format";
 import type { DashboardData } from "@/lib/data";
 
 type DashboardChartsProps = {
+  period: DashboardData["period"];
   monthlySales: DashboardData["monthlySales"];
   countrySales: DashboardData["countrySales"];
   recentLeads: DashboardData["recentLeads"];
@@ -25,21 +26,24 @@ type DashboardChartsProps = {
 
 const colors = ["#0f274a", "#2563eb", "#059669", "#d97706", "#7c3aed", "#64748b"];
 
-export function DashboardCharts({ monthlySales, countrySales, recentLeads }: DashboardChartsProps) {
+export function DashboardCharts({ period, monthlySales, countrySales, recentLeads }: DashboardChartsProps) {
   const topCountries = countrySales.slice(0, 10);
   const countryShare = buildCountryShare(countrySales);
+  const dateLabel = period.grain === "day" ? "日期" : "月份";
+  const salesDescription = period.grain === "day" ? "按日期汇总有效销售额" : "按月份汇总有效销售额";
+  const quantityDescription = period.grain === "day" ? "按日期汇总订单数量" : "按月份汇总订单数量";
 
   return (
     <div className="space-y-5">
       <section className="grid gap-5 xl:grid-cols-2">
-        <ChartCard title="月度销售趋势" description="按月份汇总有效销售额">
+        <ChartCard title={period.salesChartTitle} description={salesDescription}>
           {monthlySales.length ? (
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={monthlySales} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} minTickGap={18} />
                 <YAxis tickFormatter={(value) => compactMoney(Number(value))} tick={{ fontSize: 12 }} width={68} />
-                <Tooltip formatter={(value) => formatRmb(Number(value))} labelFormatter={(label) => `月份：${label}`} />
+                <Tooltip formatter={(value) => formatRmb(Number(value))} labelFormatter={(label) => `${dateLabel}：${label}`} />
                 <Line type="monotone" dataKey="sales" name="销售额" stroke="#0f274a" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -48,14 +52,14 @@ export function DashboardCharts({ monthlySales, countrySales, recentLeads }: Das
           )}
         </ChartCard>
 
-        <ChartCard title="月度销售数量趋势" description="按月份汇总订单数量">
+        <ChartCard title={period.quantityChartTitle} description={quantityDescription}>
           {monthlySales.length ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={monthlySales} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} minTickGap={18} />
                 <YAxis tickFormatter={(value) => formatNumber(Number(value))} tick={{ fontSize: 12 }} width={58} />
-                <Tooltip formatter={(value) => `${formatNumber(Number(value))} 件`} labelFormatter={(label) => `月份：${label}`} />
+                <Tooltip formatter={(value) => `${formatNumber(Number(value))} 件`} labelFormatter={(label) => `${dateLabel}：${label}`} />
                 <Bar dataKey="quantity" name="数量" fill="#2563eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

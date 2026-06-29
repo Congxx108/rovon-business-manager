@@ -290,6 +290,7 @@ export async function getDailyLeadById(id: string): Promise<DataResult<DailyLead
 }
 
 export type DashboardData = {
+  period: DashboardPeriodConfig;
   totalSalesRmb: number;
   totalOrders: number;
   totalQuantity: number;
@@ -322,10 +323,31 @@ export type DashboardData = {
   };
 };
 
-export type DashboardRange = "all" | "month" | "30" | "90" | "year";
+export type DashboardPeriod = "default_12m" | "this_month" | "last_30d" | "last_90d" | "this_year" | "custom";
+export type DashboardGrain = "day" | "month";
 
-export async function getDashboardData(range: DashboardRange = "all"): Promise<DataResult<DashboardData>> {
+export type DashboardPeriodConfig = {
+  period: DashboardPeriod;
+  startDate: string;
+  endDate: string;
+  grain: DashboardGrain;
+  label: string;
+  detail: string;
+  salesChartTitle: string;
+  quantityChartTitle: string;
+  error?: string;
+};
+
+export type DashboardPeriodInput = {
+  period?: DashboardPeriod;
+  startDate?: string;
+  endDate?: string;
+};
+
+export async function getDashboardData(periodInput: DashboardPeriodInput = {}): Promise<DataResult<DashboardData>> {
+  const period = resolveDashboardPeriod(periodInput);
   const fallback: DashboardData = {
+    period,
     totalSalesRmb: 0,
     totalOrders: 0,
     totalQuantity: 0,
@@ -345,21 +367,18 @@ export async function getDashboardData(range: DashboardRange = "all"): Promise<D
   if (!isSupabaseConfigured()) return emptyResult(fallback);
 
   const supabase = getSupabaseAdminClient();
-  const startDate = dashboardRangeStartDate(range);
-  let ordersQuery = supabase
+  const ordersQuery = supabase
     .from("orders")
     .select("order_date,country,product_line,quantity,sales_amount_effective_rmb,is_refund_or_cancelled")
-    .eq("is_refund_or_cancelled", false);
-  let leadsQuery = supabase
+    .eq("is_refund_or_cancelled", false)
+    .gte("order_date", period.startDate)
+    .lte("order_date", period.endDate);
+  const leadsQuery = supabase
     .from("daily_leads")
     .select("stat_date,total_increase,handbag_group_increase,backpack_group_increase")
-    .order("stat_date", { ascending: false })
-    .limit(90);
-
-  if (startDate) {
-    ordersQuery = ordersQuery.gte("order_date", startDate);
-    leadsQuery = leadsQuery.gte("stat_date", startDate);
-  }
+    .gte("stat_date", period.startDate)
+    .lte("stat_date", period.endDate)
+    .order("stat_date", { ascending: true });
 
   const [ordersResult, leadsResult, customersResult, pendingShippingResult] = await Promise.all([
     ordersQuery,
@@ -394,13 +413,13 @@ export async function getDashboardData(range: DashboardRange = "all"): Promise<D
   const followCustomers = (customersResult.data ?? []) as DashboardData["followCustomers"];
   const pendingOrders = (pendingShippingResult.data ?? []) as DashboardData["pendingShipping"]["orders"];
 
-  const monthlyMap = new Map<string, { month: string; sales: number; quantity: number }>();
+  const monthlyMap = buildTrendBucketMap(period.startDate, period.endDate, period.grain);
   const countryMap = new Map<string, { country: string; sales: number; quantity: number }>();
 
   for (const order of orders) {
     const sales = Number(order.sales_amount_effective_rmb ?? 0);
     const quantity = Number(order.quantity ?? 0);
-    const month = order.order_date?.slice(0, 7) || "未填写";
+    const month = trendKey(order.order_date, period.grain);
     const country = order.country || "未填写";
 
     monthlyMap.set(month, {
@@ -427,13 +446,14 @@ export async function getDashboardData(range: DashboardRange = "all"): Promise<D
   };
 
   return emptyResult({
+    period,
     totalSalesRmb,
     totalOrders,
     totalQuantity,
     averageOrderAmountRmb: totalOrders > 0 ? totalSalesRmb / totalOrders : 0,
-    monthlySales: Array.from(monthlyMap.values()).sort((a, b) => a.month.localeCompare(b.month)).slice(-12),
+    monthlySales: Array.from(monthlyMap.values()).sort((a, b) => a.month.localeCompare(b.month)),
     countrySales: Array.from(countryMap.values()).sort((a, b) => b.sales - a.sales),
-    recentLeads: recentLeads.reverse(),
+    recentLeads,
     followCustomers,
     pendingShipping,
   });
@@ -696,19 +716,175 @@ function nextMonth(month: string) {
   return date.toISOString().slice(0, 10);
 }
 
-function dashboardRangeStartDate(range: DashboardRange) {
-  const now = new Date();
-  if (range === "all") return null;
-  if (range === "month") return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10);
-  if (range === "year") return new Date(Date.UTC(now.getUTCFullYear(), 0, 1)).toISOString().slice(0, 10);
-  const days = range === "90" ? 90 : 30;
-  const date = new Date(now);
-  date.setUTCDate(date.getUTCDate() - days);
-  return date.toISOString().slice(0, 10);
-}
-
 function escapeLike(value: string) {
   return value.replace(/[%_]/g, (match) => `\\${match}`);
+}
+
+function resolveDashboardPeriod(input: DashboardPeriodInput): DashboardPeriodConfig {
+  const today = todayInHongKong();
+  const requested = input.period ?? "default_12m";
+
+  if (requested === "this_month") {
+    return periodConfig({
+      period: "this_month",
+      startDate: monthStart(today),
+      endDate: today,
+      grain: "day",
+      label: "本月",
+      detail: "本月 · 按天",
+    });
+  }
+
+  if (requested === "last_30d") {
+    return periodConfig({
+      period: "last_30d",
+      startDate: addDays(today, -29),
+      endDate: today,
+      grain: "day",
+      label: "最近30天",
+      detail: "最近30天 · 按天",
+    });
+  }
+
+  if (requested === "last_90d") {
+    return periodConfig({
+      period: "last_90d",
+      startDate: addDays(today, -89),
+      endDate: today,
+      grain: "day",
+      label: "最近90天",
+      detail: "最近90天 · 按天",
+    });
+  }
+
+  if (requested === "this_year") {
+    return periodConfig({
+      period: "this_year",
+      startDate: yearStart(today),
+      endDate: today,
+      grain: "month",
+      label: "今年",
+      detail: "今年 · 按月",
+    });
+  }
+
+  if (requested === "custom") {
+    const startDate = normalizeDateInput(input.startDate);
+    const endDate = normalizeDateInput(input.endDate);
+
+    if (!startDate || !endDate) {
+      return { ...defaultDashboardPeriod(today), error: "请选择开始日期和结束日期后再应用自定义范围。" };
+    }
+
+    if (startDate > endDate) {
+      return { ...defaultDashboardPeriod(today), error: "开始日期不能晚于结束日期，请修正后再应用。" };
+    }
+
+    const grain: DashboardGrain = daysBetween(startDate, endDate) <= 90 ? "day" : "month";
+    return periodConfig({
+      period: "custom",
+      startDate,
+      endDate,
+      grain,
+      label: "自定义",
+      detail: `${startDate} 至 ${endDate} · 按${grain === "day" ? "天" : "月"}`,
+    });
+  }
+
+  return defaultDashboardPeriod(today);
+}
+
+function defaultDashboardPeriod(today: string): DashboardPeriodConfig {
+  return periodConfig({
+    period: "default_12m",
+    startDate: addMonths(monthStart(today), -11),
+    endDate: today,
+    grain: "month",
+    label: "默认",
+    detail: "最近12个月 · 按月",
+  });
+}
+
+function periodConfig(config: Omit<DashboardPeriodConfig, "salesChartTitle" | "quantityChartTitle">): DashboardPeriodConfig {
+  const isDay = config.grain === "day";
+  return {
+    ...config,
+    salesChartTitle: isDay ? "日销售趋势" : "月度销售趋势",
+    quantityChartTitle: isDay ? "日销售数量趋势" : "月度销售数量趋势",
+  };
+}
+
+function buildTrendBucketMap(startDate: string, endDate: string, grain: DashboardGrain) {
+  const buckets = new Map<string, { month: string; sales: number; quantity: number }>();
+  const cursor = grain === "month" ? monthStart(startDate) : startDate;
+  const endKey = grain === "month" ? endDate.slice(0, 7) : endDate;
+  let current = cursor;
+
+  while ((grain === "month" ? current.slice(0, 7) : current) <= endKey) {
+    const key = grain === "month" ? current.slice(0, 7) : current;
+    buckets.set(key, { month: key, sales: 0, quantity: 0 });
+    current = grain === "month" ? addMonths(current, 1) : addDays(current, 1);
+  }
+
+  return buckets;
+}
+
+function trendKey(date: string | null | undefined, grain: DashboardGrain) {
+  if (!date) return "未填写";
+  return grain === "month" ? date.slice(0, 7) : date;
+}
+
+function todayInHongKong() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Hong_Kong",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeDateInput(value?: string) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const parsed = dateFromYmd(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return ymd(parsed) === value ? value : undefined;
+}
+
+function monthStart(date: string) {
+  return `${date.slice(0, 7)}-01`;
+}
+
+function yearStart(date: string) {
+  return `${date.slice(0, 4)}-01-01`;
+}
+
+function addDays(date: string, days: number) {
+  const value = dateFromYmd(date);
+  value.setUTCDate(value.getUTCDate() + days);
+  return ymd(value);
+}
+
+function addMonths(date: string, months: number) {
+  const value = dateFromYmd(monthStart(date));
+  value.setUTCMonth(value.getUTCMonth() + months);
+  return ymd(value);
+}
+
+function daysBetween(startDate: string, endDate: string) {
+  return Math.floor((dateFromYmd(endDate).getTime() - dateFromYmd(startDate).getTime()) / 86_400_000) + 1;
+}
+
+function dateFromYmd(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function ymd(date: Date) {
+  return date.toISOString().slice(0, 10);
 }
 
 function metric(label: string, value: number, warningSeverity: "ok" | "warn" | "error") {

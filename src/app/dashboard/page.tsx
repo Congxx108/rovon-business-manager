@@ -5,50 +5,96 @@ import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { StatusNote } from "@/components/status-note";
 import { ShippingStatusBadge } from "@/components/shipping-status-badge";
-import { Badge, Button, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
+import { Badge, Button, inputClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 import { DashboardCharts } from "@/app/dashboard/dashboard-charts";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
-import { getDashboardData, type DashboardRange } from "@/lib/data";
+import { getDashboardData, type DashboardPeriod } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
-const ranges: Array<[DashboardRange, string]> = [
-  ["all", "全部"],
-  ["month", "本月"],
-  ["30", "最近30天"],
-  ["90", "最近90天"],
-  ["year", "今年"],
+const periods: Array<{ value: DashboardPeriod; label: string; title: string; href: string }> = [
+  { value: "default_12m", label: "默认", title: "最近12个月 · 按月", href: "/dashboard" },
+  { value: "this_month", label: "本月", title: "本月 · 按天", href: "/dashboard?period=this_month" },
+  { value: "last_30d", label: "最近30天", title: "最近30天 · 按天", href: "/dashboard?period=last_30d" },
+  { value: "last_90d", label: "最近90天", title: "最近90天 · 按天", href: "/dashboard?period=last_90d" },
+  { value: "this_year", label: "今年", title: "今年 · 按月", href: "/dashboard?period=this_year" },
 ];
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: DashboardRange }>;
+  searchParams: Promise<{ period?: DashboardPeriod; startDate?: string; endDate?: string }>;
 }) {
-  const { range = "all" } = await searchParams;
-  const activeRange = ranges.some(([value]) => value === range) ? range : "all";
-  const result = await getDashboardData(activeRange);
+  const { period, startDate, endDate } = await searchParams;
+  const activePeriod = isDashboardPeriod(period) ? period : "default_12m";
+  const result = await getDashboardData({ period: activePeriod, startDate, endDate });
   const data = result.data;
+  const isCustom = data.period.period === "custom";
 
   return (
     <AppShell>
       <PageHeader title="Dashboard 总览" description="展示有效订单、销售趋势、每日潜客增加趋势和当前需要跟进的客户。" />
       <StatusNote configured={result.configured} error={result.error} />
 
-      <div className="mb-5 inline-flex flex-wrap gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1 shadow-sm shadow-slate-200/60">
-        {ranges.map(([value, label]) => (
-          <Link
-            key={value}
-            href={`/dashboard?range=${value}`}
-            className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
-              activeRange === value
-                ? "bg-[#0f274a] text-white shadow-sm shadow-blue-900/20"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
+      <div className="mb-5 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm shadow-slate-200/60">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="inline-flex flex-wrap gap-1 rounded-2xl bg-slate-100/80 p-1">
+            {periods.map((item) => (
+              <Link
+                key={item.value}
+                href={item.href}
+                title={item.title}
+                className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
+                  data.period.period === item.value
+                    ? "bg-[#0f274a] text-white shadow-sm shadow-blue-900/20"
+                    : "text-slate-600 hover:bg-white hover:text-slate-950"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <span
+              title="自定义日期范围"
+              className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
+                isCustom
+                  ? "bg-[#0f274a] text-white shadow-sm shadow-blue-900/20"
+                  : "text-slate-500"
+              }`}
+            >
+              自定义
+            </span>
+          </div>
+
+          <form action="/dashboard" className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <input type="hidden" name="period" value="custom" />
+            <label className="text-xs font-medium text-slate-600">
+              开始日期
+              <input
+                type="date"
+                name="startDate"
+                required
+                defaultValue={isCustom ? data.period.startDate : startDate ?? ""}
+                className={`${inputClassName} mt-1 h-9 min-w-[150px]`}
+              />
+            </label>
+            <label className="text-xs font-medium text-slate-600">
+              结束日期
+              <input
+                type="date"
+                name="endDate"
+                required
+                defaultValue={isCustom ? data.period.endDate : endDate ?? ""}
+                className={`${inputClassName} mt-1 h-9 min-w-[150px]`}
+              />
+            </label>
+            <Button type="submit" className="h-9 px-3">应用</Button>
+            <Button href="/dashboard" variant="secondary" className="h-9 px-3">清除</Button>
+          </form>
+        </div>
+        <div className="mt-2 flex flex-col gap-1 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <span>当前范围：{data.period.detail}</span>
+          {data.period.error ? <span className="font-medium text-rose-600">{data.period.error}</span> : null}
+        </div>
       </div>
 
       <section className="grid gap-4 md:grid-cols-4">
@@ -62,7 +108,7 @@ export default async function DashboardPage({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-amber-950">待发货订单</h2>
-            <p className="mt-1 text-sm text-amber-900">每天优先检查这里，避免漏发货或重复发货。列表按订单日期从早到晚显示。</p>
+            <p className="mt-1 text-sm text-amber-900">每天优先检查这里，避免漏发货或重复发货。此模块不受顶部销售时间筛选影响，始终显示当前未完成发货订单。</p>
           </div>
           <Button href="/orders?pendingShipping=1" variant="warning">查看全部待发货</Button>
         </div>
@@ -136,7 +182,7 @@ export default async function DashboardPage({
       </section>
 
       <section className="mt-6">
-        <DashboardCharts monthlySales={data.monthlySales} countrySales={data.countrySales} recentLeads={data.recentLeads} />
+        <DashboardCharts period={data.period} monthlySales={data.monthlySales} countrySales={data.countrySales} recentLeads={data.recentLeads} />
       </section>
 
       <section className="mt-6 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
@@ -183,6 +229,15 @@ export default async function DashboardPage({
       </section>
     </AppShell>
   );
+}
+
+function isDashboardPeriod(value?: string): value is DashboardPeriod {
+  return value === "default_12m"
+    || value === "this_month"
+    || value === "last_30d"
+    || value === "last_90d"
+    || value === "this_year"
+    || value === "custom";
 }
 
 function PriorityBadge({ value }: { value: string }) {
