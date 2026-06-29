@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { searchOrderCustomers, type OrderCustomerSuggestion } from "@/app/orders/actions";
 import { Button, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, textareaClassName } from "@/components/ui";
 import { detectCountryFromContact } from "@/lib/country-detection";
@@ -30,11 +31,16 @@ export function CustomerAutocompleteFields({
   const [suggestions, setSuggestions] = useState<OrderCustomerSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [activeField, setActiveField] = useState<"name" | "contact" | null>(null);
+  const [dropdownRect, setDropdownRect] = useState<{ left: number; top: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const nameAnchorRef = useRef<HTMLDivElement>(null);
+  const contactAnchorRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const detected = detectCountryFromContact(contact);
   const activeSearchText = activeField === "contact" ? contact.trim() : activeField === "name" ? customerName.trim() : "";
   const searchText = activeSearchText || (contact.trim().length >= 2 ? contact.trim() : customerName.trim());
   const visibleSuggestions = open && searchText.length >= 2 ? suggestions : [];
+  const activeAnchorRef = activeField === "name" ? nameAnchorRef : activeField === "contact" ? contactAnchorRef : null;
 
   useEffect(() => {
     if (searchText.length < 2) {
@@ -57,8 +63,33 @@ export function CustomerAutocompleteFields({
   }, [searchText]);
 
   useEffect(() => {
+    if (!visibleSuggestions.length) return;
+
+    function updateDropdownPosition() {
+      const anchor = activeAnchorRef?.current;
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      setDropdownRect({
+        left: rect.left,
+        top: rect.bottom + 8,
+        width: rect.width,
+      });
+    }
+
+    const frame = window.requestAnimationFrame(updateDropdownPosition);
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+    };
+  }, [activeAnchorRef, visibleSuggestions.length]);
+
+  useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
         setOpen(false);
         setActiveField(null);
       }
@@ -95,7 +126,7 @@ export function CustomerAutocompleteFields({
 
   return (
     <div ref={rootRef} className="contents">
-      <div className="relative">
+      <div ref={nameAnchorRef} className="relative">
         <label className={labelClassName}>
           客户名
           <input
@@ -115,9 +146,9 @@ export function CustomerAutocompleteFields({
             className={inputClassName}
           />
         </label>
-        {activeField === "name" ? <CustomerDropdown customers={visibleSuggestions} onChoose={chooseCustomer} /> : null}
+        {activeField === "name" ? <CustomerDropdown refObject={dropdownRef} rect={dropdownRect} customers={visibleSuggestions} onChoose={chooseCustomer} /> : null}
       </div>
-      <div className="relative">
+      <div ref={contactAnchorRef} className="relative">
         <label className={labelClassName}>
           联系方式 / WhatsApp
           <input
@@ -142,7 +173,7 @@ export function CustomerAutocompleteFields({
             className={inputClassName}
           />
         </label>
-        {activeField === "contact" ? <CustomerDropdown customers={visibleSuggestions} onChoose={chooseCustomer} /> : null}
+        {activeField === "contact" ? <CustomerDropdown refObject={dropdownRef} rect={dropdownRect} customers={visibleSuggestions} onChoose={chooseCustomer} /> : null}
       </div>
       <label className={labelClassName}>
         国家/渠道<span className="ml-1 text-rose-600">*</span>
@@ -161,16 +192,24 @@ export function CustomerAutocompleteFields({
 }
 
 function CustomerDropdown({
+  refObject,
+  rect,
   customers,
   onChoose,
 }: {
+  refObject: React.RefObject<HTMLDivElement | null>;
+  rect: { left: number; top: number; width: number } | null;
   customers: OrderCustomerSuggestion[];
   onChoose: (customer: OrderCustomerSuggestion) => void;
 }) {
-  if (!customers.length) return null;
+  if (!customers.length || !rect) return null;
 
-  return (
-    <div className="absolute left-0 right-0 top-full z-[100] mt-2 max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/12">
+  return createPortal(
+    <div
+      ref={refObject}
+      className="fixed z-[140] max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/18"
+      style={{ left: rect.left, top: rect.top, width: rect.width }}
+    >
       {customers.map((customer) => (
         <button
           key={customer.id}
@@ -190,7 +229,8 @@ function CustomerDropdown({
           </div>
         </button>
       ))}
-    </div>
+    </div>,
+    document.body,
   );
 }
 

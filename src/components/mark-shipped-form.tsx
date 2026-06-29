@@ -62,7 +62,7 @@ export function MarkShippedForm({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl shadow-slate-900/20"
+            className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/20"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -85,10 +85,12 @@ export function MarkShippedForm({
 
             <form action={action} className="mt-5 space-y-4">
               <input type="hidden" name="return_to" value={returnTo} />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-sm font-medium text-slate-700">
-                  物流方式
-                  <select name="shipping_method" className={inputClassName}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div className="min-w-0">
+                  <label htmlFor={`shipping-method-${orderId}`} className="block text-sm font-medium text-slate-700">
+                    物流方式
+                  </label>
+                  <select id={`shipping-method-${orderId}`} name="shipping_method" className={`${inputClassName} min-w-0`}>
                     <option value="">未填写</option>
                     {SHIPPING_METHODS.map((method) => (
                       <option key={method} value={method}>
@@ -96,15 +98,17 @@ export function MarkShippedForm({
                       </option>
                     ))}
                   </select>
-                </label>
+                </div>
                 <SmallInput label="物流/快运公司" name="shipping_company" />
                 <SmallInput label="物流单号/货运单号" name="tracking_no" />
                 <SmallInput label="发货日期" name="shipping_date" type="date" defaultValue={todayString()} />
               </div>
-              <label className="block text-sm font-medium text-slate-700">
-                发货备注
-                <textarea name="shipping_remark" rows={3} className={textareaClassName} />
-              </label>
+              <div className="min-w-0">
+                <label htmlFor={`shipping-remark-${orderId}`} className="block text-sm font-medium text-slate-700">
+                  发货备注
+                </label>
+                <textarea id={`shipping-remark-${orderId}`} name="shipping_remark" rows={3} className={`${textareaClassName} min-w-0`} />
+              </div>
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
                   取消
@@ -127,7 +131,7 @@ function OrderSummary({
   salesAmountRmb,
 }: Pick<MarkShippedFormProps, "orderNo" | "customerName" | "country" | "quantity" | "salesAmountRmb">) {
   return (
-    <div className="mt-4 grid gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 text-sm sm:grid-cols-2">
+    <div className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <SummaryLine label="订单编号" value={orderNo || "-"} />
       <SummaryLine label="客户名" value={customerName || "-"} />
       <SummaryLine label="国家/渠道" value={country || "-"} />
@@ -160,10 +164,12 @@ function SmallInput({
   defaultValue?: string;
 }) {
   return (
-    <label className="block text-sm font-medium text-slate-700">
-      {label}
-      <input name={name} type={type} defaultValue={defaultValue} className={inputClassName} />
-    </label>
+    <div className="min-w-0">
+      <label htmlFor={`${name}-${label}`} className="block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <input id={`${name}-${label}`} name={name} type={type} defaultValue={defaultValue} className={`${inputClassName} min-w-0`} />
+    </div>
   );
 }
 
