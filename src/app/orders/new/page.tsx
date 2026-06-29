@@ -2,7 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
 import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
-import { Button, FormSection } from "@/components/ui";
+import { Button, FormSection, labelClassName, textareaClassName } from "@/components/ui";
 import { createOrder } from "@/app/orders/actions";
 import { todayString } from "@/lib/csv";
 
@@ -48,7 +48,7 @@ export default async function NewOrderPage({
           <OrderItemsInput />
         </FormSection>
 
-        <FormSection title="状态与备注" description="取消/退款订单会保留记录，但不计入销售、数量和客户统计。">
+        <FormSection title="付款状态" description="付款和取消/退款信息会保留记录；取消/退款订单不计入销售、数量和客户统计。">
           <div className="grid gap-3 md:grid-cols-3">
             <PaymentFields />
             <label className="flex h-10 items-center gap-2 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
@@ -56,9 +56,13 @@ export default async function NewOrderPage({
               是否取消/退款
             </label>
           </div>
-          <div className="mt-3">
-          <FormField label="备注" name="remark" textarea rows={3} />
-          </div>
+        </FormSection>
+
+        <FormSection title="备注">
+          <label className={labelClassName}>
+            备注
+            <textarea name="remark" className={`${textareaClassName} min-h-[120px]`} />
+          </label>
         </FormSection>
 
         <div className="sticky bottom-0 z-10 -mx-2 mt-6 flex flex-wrap justify-end gap-3 rounded-t-2xl border border-slate-200 bg-white/92 px-3 py-3 shadow-lg shadow-slate-900/5 backdrop-blur">

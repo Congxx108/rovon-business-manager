@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
 import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
-import { Button, FormSection, inputClassName, labelClassName } from "@/components/ui";
+import { Button, FormSection, inputClassName, labelClassName, textareaClassName } from "@/components/ui";
 import { markOrderCancelled, updateOrder } from "@/app/orders/actions";
 import { getOrderById, getOrderItemsByOrderId } from "@/lib/data";
 import { SHIPPING_METHODS, SHIPPING_STATUSES } from "@/lib/shipping";
@@ -54,7 +54,7 @@ export default async function EditOrderPage({
           <OrderItemsInput defaultItems={orderItemsResult.data} />
         </FormSection>
 
-        <FormSection title="状态与备注">
+        <FormSection title="付款状态" description="付款和取消/退款信息会保留记录；取消/退款订单不计入销售、数量和客户统计。">
           <div className="grid gap-3 md:grid-cols-3">
             <PaymentFields
               defaultPaymentStatus={order.payment_status}
@@ -73,9 +73,13 @@ export default async function EditOrderPage({
               是否取消/退款
             </label>
           </div>
-          <div className="mt-3">
-            <FormField label="备注" name="remark" textarea rows={3} defaultValue={order.remark ?? ""} />
-          </div>
+        </FormSection>
+
+        <FormSection title="备注">
+          <label className={labelClassName}>
+            备注
+            <textarea name="remark" defaultValue={order.remark ?? ""} className={`${textareaClassName} min-h-[120px]`} />
+          </label>
         </FormSection>
 
         <FormSection title="发货信息" description="这里是避免重复发货和漏发货的关键字段。已发货但信息不完整时仍可保存，系统会给出提醒。">

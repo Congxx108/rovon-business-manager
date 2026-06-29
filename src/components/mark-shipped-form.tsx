@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
 import { useFormStatus } from "react-dom";
 import { markOrderShipped } from "@/app/orders/actions";
 import { Button, inputClassName, textareaClassName } from "@/components/ui";
@@ -52,7 +53,7 @@ export function MarkShippedForm({
         标记已发货
       </button>
 
-      {open ? (
+      {open ? createPortal(
         <div
           className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/30 px-4 py-6 backdrop-blur-[2px]"
           onMouseDown={() => setOpen(false)}
@@ -117,7 +118,8 @@ export function MarkShippedForm({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   );

@@ -256,11 +256,11 @@ function formatPaymentStatus(paymentStatus: string, depositAmount: number, payme
 }
 
 const stickyActionHeaderClassName =
-  "sticky left-0 z-30 border-r border-slate-200 bg-slate-50/95 px-4 py-3 font-medium shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)]";
+  "sticky left-0 z-10 border-r border-slate-200 bg-slate-50/95 px-4 py-3 font-medium shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)]";
 
 function stickyActionCellClassName(order: { is_refund_or_cancelled: boolean }, isRepeatOrder: boolean) {
   const background = order.is_refund_or_cancelled ? "bg-rose-50" : isRepeatOrder ? "bg-blue-50" : "bg-white";
-  return `sticky left-0 z-20 border-r border-slate-100 px-4 py-3 shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)] transition-colors ${background}`;
+  return `sticky left-0 z-[1] border-r border-slate-100 px-4 py-3 shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)] transition-colors ${background}`;
 }
 
 function orderRowClassName(order: { is_refund_or_cancelled: boolean }, isRepeatOrder: boolean) {
