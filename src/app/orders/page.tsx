@@ -33,6 +33,7 @@ export default async function OrdersPage({
     getOrderFilterOptions(),
     getOrders({}, 10000),
   ]);
+  const repeatOrderIds = buildRepeatOrderIds(exportResult.data);
   const exportRows = exportResult.data.map((order) => ({
     订单日期: order.order_date,
     订单编号: order.order_no,
@@ -106,6 +107,7 @@ export default async function OrdersPage({
       <div className={tableShellClassName}>
         <table className="w-full min-w-[1700px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
+            <col className="w-[180px]" />
             <col className="w-[90px]" />
             <col className="w-[130px]" />
             <col className="w-[160px]" />
@@ -120,10 +122,10 @@ export default async function OrdersPage({
             <col className="w-[120px]" />
             <col className="w-[140px]" />
             <col className="w-[150px]" />
-            <col className="w-[180px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
+              <th className={stickyActionHeaderClassName}>操作</th>
               <th className="px-4 py-3 font-medium">订单日期</th>
               <th className="px-4 py-3 font-medium">订单编号</th>
               <th className="px-4 py-3 font-medium">客户名</th>
@@ -138,16 +140,37 @@ export default async function OrdersPage({
               <th className="px-4 py-3 font-medium">物流/快运公司</th>
               <th className="px-4 py-3 font-medium">物流单号/货运单号</th>
               <th className="px-4 py-3 font-medium">取消/退款</th>
-              <th className="px-4 py-3 font-medium">操作</th>
             </tr>
           </thead>
           <tbody>
             {result.data.length ? (
-              result.data.map((order) => (
-                <tr key={order.id} className={order.is_refund_or_cancelled ? "border-b border-slate-100 bg-rose-50/70 align-middle transition-colors hover:bg-rose-50" : tableRowClassName}>
+              result.data.map((order) => {
+                const isRepeatOrder = repeatOrderIds.has(order.id);
+                return (
+                <tr key={order.id} className={orderRowClassName(order, isRepeatOrder)}>
+                  <td className={stickyActionCellClassName(order, isRepeatOrder)}>
+                    <div className="flex min-w-[150px] flex-wrap gap-2">
+                      <Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button>
+                      {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
+                        <MarkShippedForm
+                          orderId={order.id}
+                          orderNo={order.order_no}
+                          customerName={order.customer_name}
+                          country={order.country}
+                          quantity={order.quantity}
+                          salesAmountRmb={Number(order.sales_amount_rmb ?? 0)}
+                        />
+                      ) : null}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">{formatDate(order.order_date)}</td>
                   <td className="truncate px-4 py-3 font-medium" title={order.order_no}>{order.order_no}</td>
-                  <td className="truncate px-4 py-3" title={order.customer_name ?? ""}>{order.customer_name}</td>
+                  <td className="px-4 py-3" title={order.customer_name ?? ""}>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate">{order.customer_name}</span>
+                      {isRepeatOrder ? <Badge tone="info">返单</Badge> : null}
+                    </div>
+                  </td>
                   <td className="truncate px-4 py-3" title={order.contact ?? ""}>{order.contact ?? "-"}</td>
                   <td className="truncate px-4 py-3" title={order.country ?? ""}>{order.country ?? "-"}</td>
                   <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
@@ -165,23 +188,9 @@ export default async function OrdersPage({
                       "否"
                     )}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex min-w-[170px] flex-wrap gap-2">
-                      <Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button>
-                      {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
-                        <MarkShippedForm
-                          orderId={order.id}
-                          orderNo={order.order_no}
-                          customerName={order.customer_name}
-                          country={order.country}
-                          quantity={order.quantity}
-                          salesAmountRmb={Number(order.sales_amount_rmb ?? 0)}
-                        />
-                      ) : null}
-                    </div>
-                  </td>
                 </tr>
-              ))
+              );
+              })
             ) : (
               <tr>
                 <td className="px-4 py-8 text-slate-500" colSpan={15}>暂无订单数据，请先新增订单或导入历史订单</td>
@@ -244,4 +253,57 @@ function FilterSelect({
 function formatPaymentStatus(paymentStatus: string, depositAmount: number, paymentCurrency?: string | null) {
   const status = paymentStatus === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
   return paymentCurrency ? `${status} / ${paymentCurrency}` : status;
+}
+
+const stickyActionHeaderClassName =
+  "sticky left-0 z-30 border-r border-slate-200 bg-slate-50/95 px-4 py-3 font-medium shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)]";
+
+function stickyActionCellClassName(order: { is_refund_or_cancelled: boolean }, isRepeatOrder: boolean) {
+  const background = order.is_refund_or_cancelled ? "bg-rose-50" : isRepeatOrder ? "bg-blue-50" : "bg-white";
+  return `sticky left-0 z-20 border-r border-slate-100 px-4 py-3 shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)] transition-colors ${background}`;
+}
+
+function orderRowClassName(order: { is_refund_or_cancelled: boolean }, isRepeatOrder: boolean) {
+  if (order.is_refund_or_cancelled) return "border-b border-slate-100 bg-rose-50/70 align-middle transition-colors hover:bg-rose-50";
+  if (isRepeatOrder) return "border-b border-slate-100 bg-blue-50/45 align-middle transition-colors hover:bg-blue-50/70";
+  return tableRowClassName;
+}
+
+function buildRepeatOrderIds(orders: Array<{
+  id: string;
+  contact: string | null;
+  customer_name: string | null;
+  country: string | null;
+  order_date: string;
+  created_at: string;
+  is_refund_or_cancelled: boolean;
+}>) {
+  const grouped = new Map<string, typeof orders>();
+
+  for (const order of orders) {
+    if (order.is_refund_or_cancelled) continue;
+    const key = customerOrderKey(order);
+    if (!key) continue;
+    const group = grouped.get(key) ?? [];
+    group.push(order);
+    grouped.set(key, group);
+  }
+
+  const repeatIds = new Set<string>();
+  for (const group of grouped.values()) {
+    group
+      .sort((a, b) => `${a.order_date ?? ""}|${a.created_at ?? ""}|${a.id}`.localeCompare(`${b.order_date ?? ""}|${b.created_at ?? ""}|${b.id}`))
+      .slice(1)
+      .forEach((order) => repeatIds.add(order.id));
+  }
+
+  return repeatIds;
+}
+
+function customerOrderKey(order: { contact: string | null; customer_name: string | null; country: string | null }) {
+  const contact = order.contact?.trim().toLowerCase();
+  if (contact) return `contact:${contact}`;
+  const name = order.customer_name?.trim().toLowerCase();
+  if (!name) return null;
+  return `name:${name}|country:${order.country?.trim().toLowerCase() ?? ""}`;
 }
