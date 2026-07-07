@@ -105,7 +105,7 @@ export default async function OrdersPage({
       </FilterBar>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1700px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="w-full min-w-[1830px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
             <col className="w-[180px]" />
             <col className="w-[90px]" />
@@ -118,6 +118,7 @@ export default async function OrdersPage({
             <col className="w-[110px]" />
             <col className="w-[90px]" />
             <col className="w-[90px]" />
+            <col className="w-[130px]" />
             <col className="w-[90px]" />
             <col className="w-[120px]" />
             <col className="w-[140px]" />
@@ -136,6 +137,7 @@ export default async function OrdersPage({
               <th className="px-4 py-3 text-right font-medium">销售额RMB</th>
               <th className="px-4 py-3 font-medium">付款状态</th>
               <th className="px-4 py-3 font-medium">发货状态</th>
+              <th className="px-4 py-3 font-medium">发货日期 / 待发货</th>
               <th className="px-4 py-3 font-medium">物流方式</th>
               <th className="px-4 py-3 font-medium">物流/快运公司</th>
               <th className="px-4 py-3 font-medium">物流单号/货运单号</th>
@@ -178,6 +180,7 @@ export default async function OrdersPage({
                   <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb))}</td>
                   <td className="px-4 py-3">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0), order.payment_currency)}</td>
                   <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
+                  <td className="px-4 py-3"><ShippingTimingBadge order={order} /></td>
                   <td className="truncate px-4 py-3" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
                   <td className="truncate px-4 py-3" title={order.shipping_company ?? ""}>{order.shipping_company ?? "-"}</td>
                   <td className="truncate px-4 py-3" title={order.tracking_no ?? ""}>{order.tracking_no ?? "-"}</td>
@@ -193,7 +196,7 @@ export default async function OrdersPage({
               })
             ) : (
               <tr>
-                <td className="px-4 py-8 text-slate-500" colSpan={15}>暂无订单数据，请先新增订单或导入历史订单</td>
+                <td className="px-4 py-8 text-slate-500" colSpan={16}>暂无订单数据，请先新增订单或导入历史订单</td>
               </tr>
             )}
           </tbody>
@@ -253,6 +256,50 @@ function FilterSelect({
 function formatPaymentStatus(paymentStatus: string, depositAmount: number, paymentCurrency?: string | null) {
   const status = paymentStatus === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
   return paymentCurrency ? `${status} / ${paymentCurrency}` : status;
+}
+
+function ShippingTimingBadge({ order }: { order: { shipping_status: string; shipping_date: string | null; order_date: string | null } }) {
+  if (order.shipping_status === "已发货") {
+    if (order.shipping_date) return <Badge tone="success">{formatDate(order.shipping_date)}</Badge>;
+    return <Badge tone="warning">已发货｜未填日期</Badge>;
+  }
+
+  if (isPendingShippingStatus(order.shipping_status)) {
+    if (!order.order_date) return <>-</>;
+    const days = daysSince(order.order_date);
+    const label = days <= 0 ? "下单 0 天" : `已等 ${days} 天`;
+    if (days >= 8) return <Badge tone="danger">{label}</Badge>;
+    if (days >= 4) return <Badge tone="warning">{label}</Badge>;
+    return <Badge>{label}</Badge>;
+  }
+
+  if (order.shipping_status === "无需发货") return <Badge>{order.shipping_status}</Badge>;
+  return <>-</>;
+}
+
+function daysSince(date: string) {
+  const current = dateFromYmd(todayInHongKong());
+  const orderDate = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(orderDate.getTime())) return 0;
+  return Math.max(0, Math.floor((current.getTime() - orderDate.getTime()) / 86_400_000));
+}
+
+function todayInHongKong() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Hong_Kong",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromYmd(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
 }
 
 const stickyActionHeaderClassName =

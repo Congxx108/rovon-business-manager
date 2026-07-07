@@ -233,6 +233,26 @@ export async function getCustomerFilterOptions(): Promise<DataResult<CustomerFil
   });
 }
 
+export async function getRecentFollowedCustomers(limit = 10): Promise<DataResult<Customer[]>> {
+  if (!isSupabaseConfigured()) return emptyResult([]);
+
+  const today = todayInHongKong();
+  const startDate = addDays(today, -4);
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("*")
+    .not("last_follow_date", "is", null)
+    .gte("last_follow_date", startDate)
+    .lte("last_follow_date", today)
+    .order("last_follow_date", { ascending: false })
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+
+  if (error) return emptyResult([], error.message);
+  return emptyResult((data ?? []) as Customer[]);
+}
+
 export async function getCustomerById(id: string): Promise<DataResult<Customer | null>> {
   if (!isSupabaseConfigured()) return emptyResult(null);
 

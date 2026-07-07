@@ -6,7 +6,7 @@ import { StatusNote } from "@/components/status-note";
 import { Badge, Button, FilterBar, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 import { refreshCustomerStatsAction } from "@/app/customers/actions";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
-import { getCustomerFilterOptions, getCustomers } from "@/lib/data";
+import { getCustomerFilterOptions, getCustomers, getRecentFollowedCustomers } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,12 @@ export default async function CustomersPage({
   searchParams: Promise<{ refreshed?: string; followPriority?: string; valueLevel?: string; country?: string; search?: string }>;
 }) {
   const { refreshed, ...filters } = await searchParams;
-  const [result, filterOptions, exportResult] = await Promise.all([getCustomers(filters, 100), getCustomerFilterOptions(), getCustomers({}, 10000)]);
+  const [result, filterOptions, exportResult, recentFollowResult] = await Promise.all([
+    getCustomers(filters, 100),
+    getCustomerFilterOptions(),
+    getCustomers({}, 10000),
+    getRecentFollowedCustomers(10),
+  ]);
   const exportRows = exportResult.data.map((customer) => ({
     客户名: customer.name,
     联系方式: customer.contact ?? "",
@@ -48,7 +53,7 @@ export default async function CustomersPage({
           </form>
         </div>
       </div>
-      <StatusNote configured={result.configured} error={result.error ?? filterOptions.error} />
+      <StatusNote configured={result.configured} error={result.error ?? filterOptions.error ?? recentFollowResult.error} />
       {refreshed ? (
         <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           客户统计已根据订单重新汇总。
@@ -74,9 +79,69 @@ export default async function CustomersPage({
       </form>
       </FilterBar>
 
+      <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">近5日已跟进客户</h2>
+          <p className="mt-1 text-sm text-slate-500">展示最近5天内有跟进记录的客户，方便回顾什么时候跟进了谁、跟进状态和内容。</p>
+        </div>
+        <div className={`mt-4 ${tableShellClassName}`}>
+          <table className="w-full min-w-[980px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+            <colgroup>
+              <col className="w-[100px]" />
+              <col className="w-[170px]" />
+              <col className="w-[150px]" />
+              <col className="w-[100px]" />
+              <col className="w-[130px]" />
+              <col className="w-[240px]" />
+              <col className="w-[110px]" />
+              <col className="w-[180px]" />
+            </colgroup>
+            <thead className={tableHeadClassName}>
+              <tr>
+                <th className="px-4 py-3 font-medium">跟进日期</th>
+                <th className="px-4 py-3 font-medium">客户名</th>
+                <th className="px-4 py-3 font-medium">联系方式</th>
+                <th className="px-4 py-3 font-medium">国家/渠道</th>
+                <th className="px-4 py-3 font-medium">跟进结果/状态</th>
+                <th className="px-4 py-3 font-medium">跟进内容/备注</th>
+                <th className="px-4 py-3 font-medium">下次联系日期</th>
+                <th className="px-4 py-3 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentFollowResult.data.length ? (
+                recentFollowResult.data.map((customer) => (
+                  <tr key={customer.id} className={tableRowClassName}>
+                    <td className="px-4 py-3">{formatDate(customer.last_follow_date)}</td>
+                    <td className="truncate px-4 py-3 font-medium" title={customer.name}>
+                      <Link href={`/customers/${customer.id}`} className="underline underline-offset-4">
+                        {customer.name}
+                      </Link>
+                    </td>
+                    <td className="truncate px-4 py-3" title={customer.contact ?? ""}>{customer.contact ?? "-"}</td>
+                    <td className="truncate px-4 py-3" title={customer.country ?? ""}>{customer.country ?? "-"}</td>
+                    <td className="px-4 py-3">{customer.last_follow_result ? <Badge tone="info">{customer.last_follow_result}</Badge> : "未填写"}</td>
+                    <td className="truncate px-4 py-3 text-slate-600" title={customer.remark ?? ""}>{customer.remark ?? "-"}</td>
+                    <td className="px-4 py-3">{formatDate(customer.next_follow_date)}</td>
+                    <td className="px-4 py-3">
+                      <CustomerActions id={customer.id} />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td className="px-4 py-8 text-slate-500" colSpan={8}>近5日暂无跟进记录</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1600px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="w-full min-w-[1780px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
+            <col className="w-[180px]" />
             <col className="w-[180px]" />
             <col className="w-[160px]" />
             <col className="w-[100px]" />
@@ -90,10 +155,10 @@ export default async function CustomersPage({
             <col className="w-[110px]" />
             <col className="w-[110px]" />
             <col className="w-[190px]" />
-            <col className="w-[180px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
+              <th className={stickyActionHeaderClassName}>操作</th>
               <th className="px-4 py-3 font-medium">客户名</th>
               <th className="px-4 py-3 font-medium">联系方式</th>
               <th className="px-4 py-3 font-medium">国家/渠道</th>
@@ -107,13 +172,15 @@ export default async function CustomersPage({
               <th className="px-4 py-3 font-medium">客户复购潜力</th>
               <th className="px-4 py-3 font-medium">跟进优先级</th>
               <th className="px-4 py-3 font-medium">建议跟进动作</th>
-              <th className="px-4 py-3 font-medium">操作</th>
             </tr>
           </thead>
           <tbody>
             {result.data.length ? (
               result.data.map((customer) => (
                 <tr key={customer.id} className={tableRowClassName}>
+                  <td className={stickyActionCellClassName}>
+                    <CustomerActions id={customer.id} />
+                  </td>
                   <td className="truncate px-4 py-3 font-medium" title={customer.name}>
                     <Link href={`/customers/${customer.id}`} className="underline underline-offset-4">
                       {customer.name}
@@ -131,12 +198,6 @@ export default async function CustomersPage({
                   <td className="px-4 py-3">{customer.repurchase_potential}</td>
                   <td className="px-4 py-3"><PriorityBadge value={customer.follow_priority} /></td>
                   <td className="truncate px-4 py-3 text-slate-600" title={customer.follow_suggestion ?? ""}>{customer.follow_suggestion ?? "-"}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-3">
-                      <Button href={`/customers/${customer.id}`} variant="secondary" className="h-8 px-3">详情</Button>
-                      <Button href={`/customers/${customer.id}/edit`} variant="secondary" className="h-8 px-3">跟进/编辑</Button>
-                    </div>
-                  </td>
                 </tr>
               ))
             ) : (
@@ -150,6 +211,21 @@ export default async function CustomersPage({
     </AppShell>
   );
 }
+
+function CustomerActions({ id }: { id: string }) {
+  return (
+    <div className="flex min-w-[150px] gap-2">
+      <Button href={`/customers/${id}`} variant="secondary" className="h-8 px-3">详情</Button>
+      <Button href={`/customers/${id}/edit`} variant="secondary" className="h-8 px-3">跟进/编辑</Button>
+    </div>
+  );
+}
+
+const stickyActionHeaderClassName =
+  "sticky left-0 z-10 border-r border-slate-200 bg-slate-50/95 px-4 py-3 font-medium shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)]";
+
+const stickyActionCellClassName =
+  "sticky left-0 z-[1] border-r border-slate-100 bg-white px-4 py-3 shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)] transition-colors";
 
 function FilterSelect({
   label,
