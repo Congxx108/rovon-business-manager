@@ -339,6 +339,10 @@ export type DashboardData = {
       | "sales_amount_effective_rmb"
       | "shipping_status"
       | "shipping_method"
+      | "shipping_company"
+      | "tracking_no"
+      | "shipping_date"
+      | "shipping_remark"
     >[];
   };
 };
@@ -411,7 +415,7 @@ export async function getDashboardData(periodInput: DashboardPeriodInput = {}): 
       .limit(10),
     supabase
       .from("orders")
-      .select("id,order_no,order_date,customer_name,country,product_line,quantity,sales_amount_rmb,sales_amount_effective_rmb,shipping_status,shipping_method")
+      .select("id,order_no,order_date,customer_name,country,product_line,quantity,sales_amount_rmb,sales_amount_effective_rmb,shipping_status,shipping_method,shipping_company,tracking_no,shipping_date,shipping_remark")
       .eq("is_refund_or_cancelled", false)
       .in("shipping_status", [...PENDING_SHIPPING_STATUSES])
       .order("order_date", { ascending: true })

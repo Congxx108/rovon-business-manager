@@ -161,6 +161,13 @@ export default async function DashboardPage({
                     <td className="px-4 py-3">
                       <MarkShippedForm
                         orderId={order.id}
+                        initialShipping={{
+                          shipping_method: order.shipping_method,
+                          shipping_company: order.shipping_company,
+                          tracking_no: order.tracking_no,
+                          shipping_date: order.shipping_date,
+                          shipping_remark: order.shipping_remark,
+                        }}
                         returnTo="/dashboard"
                         orderNo={order.order_no}
                         customerName={order.customer_name}

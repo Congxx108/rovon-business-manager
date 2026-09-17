@@ -177,3 +177,11 @@
 - Dashboard 继续读取数据库最终增量，无新增重复计算；数据检查和清理预览仅补齐 WhatsApp3 展示/查询，不改变清理行为。
 - 发布顺序：先执行新增 Supabase migration，再部署应用；Vercel 不会自动执行数据库 migration。
 - 验证：`npm run lint`、`npm run build`、`npx tsc --noEmit` 全部通过；使用本地隔离 PGlite 数据库执行新 SQL，验证历史字段保留、历史修改/改日期重算、首条和 override；通过真实 Server Action 代码配合隔离数据库适配器验证五个录入/更新动作、CSV 新旧格式和 Dashboard 最终增量/日期筛选，并检查页面字段与导出映射。生产 migration 已执行，迁移前后 179 条记录的原有字段数据指纹一致，WhatsApp3 默认 0；未写入或删除业务记录。尚未做部署后的浏览器人工验收。
+
+## 2026-09-17 标记已发货 Modal 自动预填
+
+- 修复 Dashboard 和订单列表的共用发货弹窗未接收已有物流信息的问题。
+- `MarkShippedForm` 接收订单物流初始值，预填物流方式、公司、单号、发货日期和备注；日期缺失时继续默认今天，其余缺失字段保持空值。
+- Dashboard 待发货查询和类型补齐四个缺失字段，两个入口统一传递现有数据。
+- 原保存 server action、Portal、遮罩层级、待发货定义和销售统计保持不变；无数据库或部署配置变更，无真实数据写入。
+- 验证：lint、build、TypeScript 通过；本地 React/jsdom 验证完整/部分/空物流信息、日期优先级、直接保存及修改保存的 FormData，经原 server action 模拟写入校验；验证 Portal 挂载、层级、Escape/遮罩关闭及重新打开。未执行真实订单发货或线上视觉验收。

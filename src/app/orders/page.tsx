@@ -156,6 +156,13 @@ export default async function OrdersPage({
                       {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
                         <MarkShippedForm
                           orderId={order.id}
+                          initialShipping={{
+                            shipping_method: order.shipping_method,
+                            shipping_company: order.shipping_company,
+                            tracking_no: order.tracking_no,
+                            shipping_date: order.shipping_date,
+                            shipping_remark: order.shipping_remark,
+                          }}
                           orderNo={order.order_no}
                           customerName={order.customer_name}
                           country={order.country}

@@ -184,6 +184,8 @@
   - `/orders` 和 Dashboard 待发货模块可打开“标记已发货”Modal。
   - `MarkShippedForm` 使用 Portal 渲染到 `document.body`，避免被表格 sticky 列遮挡。
   - 标记已发货保存后更新发货状态和物流信息。
+  - Dashboard 和订单列表将订单已有的五个物流字段传入共用 `MarkShippedForm.initialShipping`；打开时自动预填，发货日期优先已有日期，缺失时沿用 `todayString()` 默认今天。
+  - Dashboard 待发货查询包含物流方式、公司、单号、日期和备注；保存仍使用原 `markOrderShipped`，不改变统计、待发货定义或数据库结构。
 
 ### 3.7 客户管理
 

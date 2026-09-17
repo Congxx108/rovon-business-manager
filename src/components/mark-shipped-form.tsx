@@ -7,10 +7,12 @@ import { markOrderShipped } from "@/app/orders/actions";
 import { Button, inputClassName, textareaClassName } from "@/components/ui";
 import { todayString } from "@/lib/csv";
 import { formatNumber, formatRmb } from "@/lib/format";
+import type { Order } from "@/lib/types";
 import { SHIPPING_METHODS } from "@/lib/shipping";
 
 type MarkShippedFormProps = {
   orderId: string;
+  initialShipping: Pick<Order, "shipping_method" | "shipping_company" | "tracking_no" | "shipping_date" | "shipping_remark">;
   returnTo?: string;
   orderNo?: string | null;
   customerName?: string | null;
@@ -21,6 +23,7 @@ type MarkShippedFormProps = {
 
 export function MarkShippedForm({
   orderId,
+  initialShipping,
   returnTo = "/orders?pendingShipping=1",
   orderNo,
   customerName,
@@ -91,7 +94,7 @@ export function MarkShippedForm({
                   <label htmlFor={`shipping-method-${orderId}`} className="block text-sm font-medium text-slate-700">
                     物流方式
                   </label>
-                  <select id={`shipping-method-${orderId}`} name="shipping_method" className={`${inputClassName} min-w-0`}>
+                  <select id={`shipping-method-${orderId}`} name="shipping_method" defaultValue={initialShipping.shipping_method ?? ""} className={`${inputClassName} min-w-0`}>
                     <option value="">未填写</option>
                     {SHIPPING_METHODS.map((method) => (
                       <option key={method} value={method}>
@@ -100,15 +103,15 @@ export function MarkShippedForm({
                     ))}
                   </select>
                 </div>
-                <SmallInput label="物流/快运公司" name="shipping_company" />
-                <SmallInput label="物流单号/货运单号" name="tracking_no" />
-                <SmallInput label="发货日期" name="shipping_date" type="date" defaultValue={todayString()} />
+                <SmallInput label="物流/快运公司" name="shipping_company" defaultValue={initialShipping.shipping_company ?? ""} />
+                <SmallInput label="物流单号/货运单号" name="tracking_no" defaultValue={initialShipping.tracking_no ?? ""} />
+                <SmallInput label="发货日期" name="shipping_date" type="date" defaultValue={initialShipping.shipping_date ?? todayString()} />
               </div>
               <div className="min-w-0">
                 <label htmlFor={`shipping-remark-${orderId}`} className="block text-sm font-medium text-slate-700">
                   发货备注
                 </label>
-                <textarea id={`shipping-remark-${orderId}`} name="shipping_remark" rows={3} className={`${textareaClassName} min-w-0`} />
+                <textarea id={`shipping-remark-${orderId}`} name="shipping_remark" defaultValue={initialShipping.shipping_remark ?? ""} rows={3} className={`${textareaClassName} min-w-0`} />
               </div>
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
