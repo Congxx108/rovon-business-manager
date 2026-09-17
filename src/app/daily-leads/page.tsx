@@ -23,6 +23,7 @@ export default async function DailyLeadsPage({
     facebook_leads?: string;
     whatsapp1?: string;
     whatsapp2?: string;
+    whatsapp3?: string;
     handbag_group?: string;
     backpack_group?: string;
   }>;
@@ -34,6 +35,7 @@ export default async function DailyLeadsPage({
     Facebook后台潜在客户: lead.facebook_leads,
     WhatsApp1: lead.whatsapp1,
     WhatsApp2: lead.whatsapp2,
+    WhatsApp3: lead.whatsapp3,
     总增加数: lead.total_increase,
     女包群: lead.handbag_group,
     "增加数-女包群": lead.handbag_group_increase,
@@ -76,6 +78,7 @@ export default async function DailyLeadsPage({
             <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={params.facebook_leads ?? 0} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={params.whatsapp1 ?? 0} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={params.whatsapp2 ?? 0} />
+            <FormField label="WhatsApp3" name="whatsapp3" type="number" required min={0} defaultValue={params.whatsapp3 ?? 0} />
             <FormField label="女包群" name="handbag_group" type="number" required min={0} defaultValue={params.handbag_group ?? 0} />
             <FormField label="双肩包群" name="backpack_group" type="number" required min={0} defaultValue={params.backpack_group ?? 0} />
           </div>
@@ -86,10 +89,11 @@ export default async function DailyLeadsPage({
       </details>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1240px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="w-full min-w-[1350px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
             <col className="w-[100px]" />
             <col className="w-[170px]" />
+            <col className="w-[110px]" />
             <col className="w-[110px]" />
             <col className="w-[110px]" />
             <col className="w-[110px]" />
@@ -106,6 +110,7 @@ export default async function DailyLeadsPage({
               <th className="px-4 py-3 text-right font-medium">Facebook后台潜在客户</th>
               <th className="px-4 py-3 text-right font-medium">WhatsApp1</th>
               <th className="px-4 py-3 text-right font-medium">WhatsApp2</th>
+              <th className="px-4 py-3 text-right font-medium">WhatsApp3</th>
               <th className="px-4 py-3 text-right font-medium">总增加数</th>
               <th className="px-4 py-3 text-right font-medium">女包群</th>
               <th className="px-4 py-3 text-right font-medium">增加数-女包群</th>
@@ -123,6 +128,7 @@ export default async function DailyLeadsPage({
                   <td className="px-4 py-3 text-right">{formatNumber(lead.facebook_leads)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp1)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp2)}</td>
+                  <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp3)}</td>
                   <td className="px-4 py-3 text-right"><IncreaseBadge value={lead.total_increase} manual={lead.total_increase_override !== null} /></td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.handbag_group)}</td>
                   <td className="px-4 py-3 text-right"><IncreaseBadge value={lead.handbag_group_increase} manual={lead.handbag_group_increase_override !== null} /></td>
@@ -136,7 +142,7 @@ export default async function DailyLeadsPage({
               ))
             ) : (
               <tr>
-                <td className="px-4 py-8 text-slate-500" colSpan={11}>暂无每日潜客数据，请先新增或导入每日潜客统计</td>
+                <td className="px-4 py-8 text-slate-500" colSpan={12}>暂无每日潜客数据，请先新增或导入每日潜客统计</td>
               </tr>
             )}
           </tbody>
@@ -183,6 +189,7 @@ function ExistingDateNotice({
     facebook_leads?: string;
     whatsapp1?: string;
     whatsapp2?: string;
+    whatsapp3?: string;
     handbag_group?: string;
     backpack_group?: string;
   };
@@ -191,7 +198,7 @@ function ExistingDateNotice({
     <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
       <div className="font-medium">该日期已存在，确认后将更新这一天的数据，不会新增重复记录。</div>
       <form action={quickUpdateExistingDailyLead} className="mt-3 flex flex-wrap gap-3">
-        {["stat_date", "facebook_leads", "whatsapp1", "whatsapp2", "handbag_group", "backpack_group"].map((name) => (
+        {["stat_date", "facebook_leads", "whatsapp1", "whatsapp2", "whatsapp3", "handbag_group", "backpack_group"].map((name) => (
           <input key={name} type="hidden" name={name} value={params[name as keyof typeof params] ?? ""} />
         ))}
         <Button type="submit" variant="warning">更新这一天的数据</Button>

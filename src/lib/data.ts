@@ -499,7 +499,7 @@ export async function getDataCheckData(): Promise<DataResult<DataCheckData>> {
     supabase.from("customers").select("name,contact,country,total_sales_rmb,repurchase_status,repurchase_potential,follow_priority,last_order_date"),
     supabase
       .from("daily_leads")
-      .select("stat_date,facebook_leads,whatsapp1,whatsapp2,handbag_group,backpack_group,total_increase,handbag_group_increase,backpack_group_increase,total_increase_override,handbag_group_increase_override,backpack_group_increase_override,is_handbag_group_reset,is_backpack_group_reset"),
+      .select("stat_date,facebook_leads,whatsapp1,whatsapp2,whatsapp3,handbag_group,backpack_group,total_increase,handbag_group_increase,backpack_group_increase,total_increase_override,handbag_group_increase_override,backpack_group_increase_override,is_handbag_group_reset,is_backpack_group_reset"),
   ]);
 
   if (ordersResult.error || customersResult.error || leadsResult.error) {
@@ -553,8 +553,8 @@ export async function getDataCheckData(): Promise<DataResult<DataCheckData>> {
       metric("总记录数", leads.length, "ok"),
       metric("日期重复记录数", Array.from(leadDates.values()).filter((count) => count > 1).length, "error"),
       metric(
-        "三个累计字段为空的记录数",
-        leads.filter((lead) => lead.facebook_leads === null || lead.whatsapp1 === null || lead.whatsapp2 === null).length,
+        "四个累计字段为空的记录数",
+        leads.filter((lead) => lead.facebook_leads === null || lead.whatsapp1 === null || lead.whatsapp2 === null || lead.whatsapp3 === null).length,
         "error",
       ),
       metric(
@@ -655,6 +655,7 @@ export async function getDataCheckData(): Promise<DataResult<DataCheckData>> {
         facebookLeads: Number(lead.facebook_leads ?? 0),
         whatsapp1: Number(lead.whatsapp1 ?? 0),
         whatsapp2: Number(lead.whatsapp2 ?? 0),
+        whatsapp3: Number(lead.whatsapp3 ?? 0),
         totalIncrease: Number(lead.total_increase ?? 0),
         handbagGroup: Number(lead.handbag_group ?? 0),
         handbagGroupIncrease: Number(lead.handbag_group_increase ?? 0),
@@ -681,6 +682,7 @@ export type ImportReviewData = {
     facebookLeads: number;
     whatsapp1: number;
     whatsapp2: number;
+    whatsapp3: number;
     totalIncrease: number;
     handbagGroup: number;
     handbagGroupIncrease: number;
@@ -691,7 +693,7 @@ export type ImportReviewData = {
 
 export type DataCleanupPreview = {
   testOrders: Pick<Order, "id" | "order_no" | "order_date" | "customer_name" | "contact" | "country" | "sales_amount_rmb" | "remark">[];
-  testDailyLeads: Pick<DailyLead, "id" | "stat_date" | "facebook_leads" | "whatsapp1" | "whatsapp2" | "handbag_group" | "backpack_group">[];
+  testDailyLeads: Pick<DailyLead, "id" | "stat_date" | "facebook_leads" | "whatsapp1" | "whatsapp2" | "whatsapp3" | "handbag_group" | "backpack_group">[];
   affectedCustomerCount: number;
 };
 
@@ -709,7 +711,7 @@ export async function getDataCleanupPreview(): Promise<DataResult<DataCleanupPre
       .limit(200),
     supabase
       .from("daily_leads")
-      .select("id,stat_date,facebook_leads,whatsapp1,whatsapp2,handbag_group,backpack_group")
+      .select("id,stat_date,facebook_leads,whatsapp1,whatsapp2,whatsapp3,handbag_group,backpack_group")
       .gte("stat_date", "2026-06-25")
       .lte("stat_date", "2026-06-28")
       .order("stat_date", { ascending: false }),

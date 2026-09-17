@@ -70,6 +70,7 @@ export type DailyLead = {
   facebook_leads: number;
   whatsapp1: number;
   whatsapp2: number;
+  whatsapp3: number;
   total_increase: number;
   total_increase_override: number | null;
   handbag_group: number;

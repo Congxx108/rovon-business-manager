@@ -52,6 +52,7 @@ export default async function EditDailyLeadPage({
             <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={lead.facebook_leads} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={lead.whatsapp1} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={lead.whatsapp2} />
+            <FormField label="WhatsApp3" name="whatsapp3" type="number" required min={0} defaultValue={lead.whatsapp3} />
             <FormField label="女包群" name="handbag_group" type="number" required min={0} defaultValue={lead.handbag_group} />
             <FormField label="双肩包群" name="backpack_group" type="number" required min={0} defaultValue={lead.backpack_group} />
           </div>
@@ -59,7 +60,7 @@ export default async function EditDailyLeadPage({
 
         <FormSection
           title="特殊情况 / 手动修正"
-          description="正常情况下不用填写手动增加数；只有换群、历史数据修正、WhatsApp2 中途启用等情况，才需要手动覆盖系统计算值。"
+          description="正常情况下不用填写手动增加数；只有换群、历史数据修正、WhatsApp2 / WhatsApp3 中途启用等情况，才需要手动覆盖系统计算值。"
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">

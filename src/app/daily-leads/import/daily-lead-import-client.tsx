@@ -86,7 +86,7 @@ export function DailyLeadImportClient() {
           <input type="file" accept=".csv,text/csv" onChange={handleFileChange} className="mt-2 block w-full text-sm text-slate-700" />
           <DownloadDailyLeadTemplateButton />
         </label>
-        <p className="mt-3 text-xs text-slate-500">模板中的三个增加数字段可以用于校验，也可以在导入时保留为手动修正值。</p>
+        <p className="mt-3 text-xs text-slate-500">模板中的三个增加数字段可以用于校验，也可以在导入时保留为手动修正值。旧 CSV 缺少 WhatsApp3 列或该列为空时按 0 导入；同日期已有 WhatsApp3 数据也会被更新为 0，请先核对预览。</p>
         {fileError ? <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{fileError}</div> : null}
       </div>
 
@@ -107,7 +107,7 @@ export function DailyLeadImportClient() {
               <span>
                 <span className="font-medium">保留 CSV 中的每日增加数作为手动修正值</span>
                 <span className="mt-1 block text-xs leading-5">
-                  适合历史数据中存在换群、WhatsApp2 中途启用、人工修正等情况。勾选后，CSV 的增加数会写入手动修正字段，Dashboard 趋势会优先使用这些增加数。
+                  适合历史数据中存在换群、WhatsApp2 / WhatsApp3 中途启用、人工修正等情况。勾选后，CSV 的增加数会写入手动修正字段，Dashboard 趋势会优先使用这些增加数。
                 </span>
               </span>
             </label>
@@ -151,7 +151,7 @@ function DownloadDailyLeadTemplateButton() {
       onClick={() =>
         downloadCsv(
           "rovon-daily-leads-import-template.csv",
-          "日期,客户,WhatsApp1,WhatsApp2,总增加数,女包群,增加数-女包群,书包群人数,增加数-双肩包群\r\n2026-06-27,3250,3200,1380,57,130,4,668,1\r\n",
+          "日期,客户,WhatsApp1,WhatsApp2,WhatsApp3,总增加数,女包群,增加数-女包群,书包群人数,增加数-双肩包群\r\n2026-06-27,3250,3200,1380,0,57,130,4,668,1\r\n",
         )
       }
       className="mt-3 inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
@@ -289,7 +289,7 @@ function DifferenceTable({ title, differences }: { title: string; differences: N
 function PreviewTable({ rows }: { rows: ParsedDailyLeadImportRow[] }) {
   return (
     <div className={tableShellClassName}>
-      <table className="w-full min-w-[980px] text-left text-sm">
+      <table className="w-full min-w-[1090px] text-left text-sm">
         <thead className={tableHeadClassName}>
           <tr>
             <th className="px-4 py-3 font-medium">行号</th>
@@ -297,6 +297,7 @@ function PreviewTable({ rows }: { rows: ParsedDailyLeadImportRow[] }) {
             <th className="px-4 py-3 font-medium">Facebook</th>
             <th className="px-4 py-3 font-medium">WhatsApp1</th>
             <th className="px-4 py-3 font-medium">WhatsApp2</th>
+            <th className="px-4 py-3 font-medium">WhatsApp3</th>
             <th className="px-4 py-3 font-medium">女包群</th>
             <th className="px-4 py-3 font-medium">总增加数</th>
             <th className="px-4 py-3 font-medium">女包群增加</th>
@@ -313,6 +314,7 @@ function PreviewTable({ rows }: { rows: ParsedDailyLeadImportRow[] }) {
               <td className="px-4 py-3">{formatNumber(row.facebook_leads)}</td>
               <td className="px-4 py-3">{formatNumber(row.whatsapp1)}</td>
               <td className="px-4 py-3">{formatNumber(row.whatsapp2)}</td>
+              <td className="px-4 py-3">{formatNumber(row.whatsapp3)}</td>
               <td className="px-4 py-3">{formatNumber(row.handbag_group)}</td>
               <td className="px-4 py-3">{formatOptionalNumber(row.csv_total_increase)}</td>
               <td className="px-4 py-3">{formatOptionalNumber(row.csv_handbag_group_increase)}</td>

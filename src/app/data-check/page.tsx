@@ -139,6 +139,7 @@ function RecentDailyLeadsTable({
     facebookLeads: number;
     whatsapp1: number;
     whatsapp2: number;
+    whatsapp3: number;
     totalIncrease: number;
     handbagGroup: number;
     handbagGroupIncrease: number;
@@ -149,13 +150,14 @@ function RecentDailyLeadsTable({
   return (
     <section className={tableShellClassName}>
       <div className="border-b border-slate-200 px-4 py-3 font-semibold">最近 7 条每日潜客记录</div>
-      <table className="w-full min-w-[1040px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+      <table className="w-full min-w-[1150px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
         <thead className={tableHeadClassName}>
           <tr>
             <th className="px-4 py-3 font-medium">日期</th>
             <th className="px-4 py-3 font-medium">Facebook</th>
             <th className="px-4 py-3 font-medium">WhatsApp1</th>
             <th className="px-4 py-3 font-medium">WhatsApp2</th>
+            <th className="px-4 py-3 font-medium">WhatsApp3</th>
             <th className="px-4 py-3 font-medium">总增加数</th>
             <th className="px-4 py-3 font-medium">女包群</th>
             <th className="px-4 py-3 font-medium">女包群增加</th>
@@ -170,6 +172,7 @@ function RecentDailyLeadsTable({
               <td className="px-4 py-3">{formatNumber(row.facebookLeads)}</td>
               <td className="px-4 py-3">{formatNumber(row.whatsapp1)}</td>
               <td className="px-4 py-3">{formatNumber(row.whatsapp2)}</td>
+              <td className="px-4 py-3">{formatNumber(row.whatsapp3)}</td>
               <td className="px-4 py-3">{formatNumber(row.totalIncrease)}</td>
               <td className="px-4 py-3">{formatNumber(row.handbagGroup)}</td>
               <td className="px-4 py-3">{formatNumber(row.handbagGroupIncrease)}</td>

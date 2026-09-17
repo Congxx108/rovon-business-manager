@@ -17,6 +17,7 @@ export default async function NewDailyLeadPage({
     facebook_leads?: string;
     whatsapp1?: string;
     whatsapp2?: string;
+    whatsapp3?: string;
     handbag_group?: string;
     backpack_group?: string;
     total_increase?: string;
@@ -55,7 +56,7 @@ export default async function NewDailyLeadPage({
           <div className="font-medium">该日期已存在。</div>
           <p className="mt-1">可以更新该日期记录，或取消返回列表。</p>
           <form action={updateExistingDailyLead} className="mt-3 inline-flex gap-3">
-            {["stat_date", "facebook_leads", "whatsapp1", "whatsapp2", "handbag_group", "backpack_group"].map((name) => (
+            {["stat_date", "facebook_leads", "whatsapp1", "whatsapp2", "whatsapp3", "handbag_group", "backpack_group"].map((name) => (
               <input key={name} type="hidden" name={name} value={params[name as keyof typeof params] ?? ""} />
             ))}
             <Button type="submit" variant="warning">更新该日期记录</Button>
@@ -71,6 +72,7 @@ export default async function NewDailyLeadPage({
             <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required defaultValue={0} min={0} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required defaultValue={0} min={0} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required defaultValue={0} min={0} />
+            <FormField label="WhatsApp3" name="whatsapp3" type="number" required defaultValue={0} min={0} />
             <FormField label="女包群" name="handbag_group" type="number" required defaultValue={0} min={0} />
             <FormField label="双肩包群" name="backpack_group" type="number" required defaultValue={0} min={0} />
           </div>

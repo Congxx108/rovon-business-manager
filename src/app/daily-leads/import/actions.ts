@@ -40,7 +40,7 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
   const supabase = getSupabaseAdminClient();
   const { data, error } = await supabase
     .from("daily_leads")
-    .select("id,stat_date,facebook_leads,whatsapp1,whatsapp2,total_increase,handbag_group,handbag_group_increase,backpack_group,backpack_group_increase");
+    .select("id,stat_date,facebook_leads,whatsapp1,whatsapp2,whatsapp3,total_increase,handbag_group,handbag_group_increase,backpack_group,backpack_group_increase");
 
   if (error) return { existingDates: [], differences: [] };
 
@@ -54,6 +54,7 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
       facebook_leads: Number(row.facebook_leads ?? 0),
       whatsapp1: Number(row.whatsapp1 ?? 0),
       whatsapp2: Number(row.whatsapp2 ?? 0),
+      whatsapp3: Number(row.whatsapp3 ?? 0),
       handbag_group: Number(row.handbag_group ?? 0),
       backpack_group: Number(row.backpack_group ?? 0),
     });
@@ -65,6 +66,7 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
       facebook_leads: row.facebook_leads,
       whatsapp1: row.whatsapp1,
       whatsapp2: row.whatsapp2,
+      whatsapp3: row.whatsapp3 ?? 0,
       handbag_group: row.handbag_group,
       backpack_group: row.backpack_group,
     });
@@ -77,7 +79,7 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
     const row = calculatedRows[index];
     const previous = calculatedRows[index - 1];
     calculatedByDate.set(row.stat_date, {
-      total: previous ? row.facebook_leads + row.whatsapp1 + row.whatsapp2 - (previous.facebook_leads + previous.whatsapp1 + previous.whatsapp2) : 0,
+      total: previous ? row.facebook_leads + row.whatsapp1 + row.whatsapp2 + row.whatsapp3 - (previous.facebook_leads + previous.whatsapp1 + previous.whatsapp2 + previous.whatsapp3) : 0,
       handbag: previous ? row.handbag_group - previous.handbag_group : 0,
       backpack: previous ? row.backpack_group - previous.backpack_group : 0,
     });
@@ -127,6 +129,7 @@ export async function importDailyLeadsAction(
     facebook_leads: row.facebook_leads,
     whatsapp1: row.whatsapp1,
     whatsapp2: row.whatsapp2,
+    whatsapp3: row.whatsapp3 ?? 0,
     handbag_group: row.handbag_group,
     backpack_group: row.backpack_group,
     total_increase_override: preserveCsvIncreases ? row.csv_total_increase : null,
@@ -180,6 +183,7 @@ type DailyLeadPreviewRow = {
   facebook_leads: number;
   whatsapp1: number;
   whatsapp2: number;
+  whatsapp3: number;
   handbag_group: number;
   backpack_group: number;
 };

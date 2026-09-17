@@ -40,6 +40,7 @@ export type ParsedDailyLeadImportRow = {
   facebook_leads: number;
   whatsapp1: number;
   whatsapp2: number;
+  whatsapp3: number;
   handbag_group: number;
   backpack_group: number;
   csv_total_increase: number | null;
@@ -130,6 +131,7 @@ export function mapDailyLeadImportRows(records: CsvRecord[]) {
     const facebook = parseNumberInput(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.facebook_leads));
     const whatsapp1 = parseNumberInput(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.whatsapp1));
     const whatsapp2 = parseNumberInput(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.whatsapp2));
+    const whatsapp3 = parseNumberInput(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.whatsapp3));
     const handbag = parseNumberInput(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.handbag_group));
     const backpack = parseNumberInput(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.backpack_group));
     const csvTotal = optionalNumber(getCsvValue(record, DAILY_LEAD_CSV_FIELD_ALIASES.total_increase));
@@ -142,6 +144,7 @@ export function mapDailyLeadImportRows(records: CsvRecord[]) {
       ["Facebook后台潜在客户", facebook],
       ["WhatsApp1", whatsapp1],
       ["WhatsApp2", whatsapp2],
+      ["WhatsApp3", whatsapp3],
       ["女包群", handbag],
       ["双肩包群", backpack],
     ] as const) {
@@ -155,6 +158,7 @@ export function mapDailyLeadImportRows(records: CsvRecord[]) {
       facebook_leads: facebook.value,
       whatsapp1: whatsapp1.value,
       whatsapp2: whatsapp2.value,
+      whatsapp3: whatsapp3.value,
       handbag_group: handbag.value,
       backpack_group: backpack.value,
       csv_total_increase: csvTotal,
