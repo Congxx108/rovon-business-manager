@@ -217,6 +217,7 @@
   - `whatsapp1`
   - `whatsapp2`
   - `whatsapp3`
+  - `whatsapp4`
   - `total_increase`
   - `handbag_group`
   - `handbag_group_increase`
@@ -225,13 +226,15 @@
   - override 和换群标记字段
 - 代码现状：
   - 每日潜客增加数通过数据库函数 `recalculate_daily_leads()` 全量重算。
-  - 支持手动 override 增加数，用于换群、历史数据修正、WhatsApp2 / WhatsApp3 中途启用等情况。
+  - 支持手动 override 增加数，用于换群、历史数据修正、WhatsApp2 / WhatsApp3 / WhatsApp4 中途启用等情况。
   - Dashboard 图表使用最终的 `total_increase`、`handbag_group_increase`、`backpack_group_increase`。
-  - 自动总增加数 = Facebook、WhatsApp1、WhatsApp2、WhatsApp3 四个累计数之和减去上一条日期记录的对应合计；首条自动值为 0，非空 override（含 0、负数）优先。
-  - 快速录入、新增、同日期更新、编辑、历史表格、CSV 模板/预览/导出均支持 WhatsApp3，位置在 WhatsApp2 后。
-  - 旧 CSV 缺列或空值按 0 导入，沿用同日期覆盖规则（已有 WhatsApp3 也会变为 0），导入页有明确提示。
+  - WhatsApp1～4 是最终有效潜客池；`total_increase` 只统计四个 WhatsApp 的每日增量；Facebook 后台潜客保留为辅助指标，不参与总潜客增加计算。自动总潜客增加 = 四个 WhatsApp 累计数之和减去上一条日期记录的对应合计；首条自动值为 0，非空 override（含 0、负数）优先。
+  - 快速录入、新增、同日期更新、编辑、历史表格、CSV 模板/预览/导出均支持 WhatsApp1～4。录入和历史表格中 WhatsApp1～4 前置，Facebook 为辅助指标。
+  - 旧 CSV 的 WhatsApp4 缺列或空白：同日期保留已有值，新日期默认 0；显式 0 正常写入。WhatsApp3 缺列按 0 的原行为保留。导入始终保留已有非空 override（包括 0）和备注；CSV 增加数默认仅校验，确认符合新口径后才勾选为尚无 override 的字段填入人工值。
   - 编辑页写入现有手动修正字段；新增页的同日期确认只更新累计数，保留已有 override。
-  - WhatsApp3 migration 仅添加字段和替换函数，不主动调用重算或修改旧业务字段；生产 migration 已于 2026-09-17 应用，原有 179 条记录字段指纹保持一致；应用部署仍需通过 GitHub/Vercel 完成。
+  - WhatsApp3 migration 仅添加字段和替换函数，不主动调用重算或修改旧业务字段；生产 migration 已于 2026-09-17 应用，原有 179 条记录字段指纹保持一致；该次应用部署已完成。
+  - FB增加和FB占比由 `src/lib/daily-lead-metrics.ts` 在查询层派生，历史表格和导出使用；列表额外读取一条前序记录，避免显示边界算错。首条 FB增加为 0，比例分母使用最终 total_increase；分母非正、非有限值、FB负增长或比例超过100%时显示 `-`，不新增持久化字段。
+  - 20260918025512_add_whatsapp4_whatsapp_only_leads.sql 增加 WhatsApp4（integer / NOT NULL / DEFAULT 0 / CHECK >= 0），并全量重算历史最终增加数。执行前审计180条记录、120条总增加人工值，已执行并核对：60条自动值变化，总和6932→5755；累计数、人工值、群标记及群增加结果的指纹完全一致；重算按现有触发器更新 updated_at。
   - 不做 WhatsApp 群 1024 上限提醒。
 
 ### 3.9 数据检查与清理
@@ -253,6 +256,7 @@ Migration 文件：
 - `20260628120000_add_order_items_and_deposit.sql`
 - `20260628123000_add_order_payment_details.sql`
 - `20260917070334_add_daily_leads_whatsapp3.sql`
+- `20260918025512_add_whatsapp4_whatsapp_only_leads.sql`
 
 主要表：
 

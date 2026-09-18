@@ -38,7 +38,7 @@ export default async function EditDailyLeadPage({
         <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
           <div className="font-medium">保存成功，系统已重新计算增量。</div>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <ResultCard label="总增加数" value={query.total_increase ?? lead.total_increase} />
+            <ResultCard label="总潜客增加" value={query.total_increase ?? lead.total_increase} />
             <ResultCard label="增加数-女包群" value={query.handbag_group_increase ?? lead.handbag_group_increase} />
             <ResultCard label="增加数-双肩包群" value={query.backpack_group_increase ?? lead.backpack_group_increase} />
           </div>
@@ -49,10 +49,11 @@ export default async function EditDailyLeadPage({
         <FormSection title="累计字段" description="修改历史记录后，系统会按日期顺序重新计算所有增量。">
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="日期" name="stat_date" type="date" required defaultValue={lead.stat_date} />
-            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={lead.facebook_leads} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={lead.whatsapp1} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={lead.whatsapp2} />
             <FormField label="WhatsApp3" name="whatsapp3" type="number" required min={0} defaultValue={lead.whatsapp3} />
+            <FormField label="WhatsApp4" name="whatsapp4" type="number" required min={0} defaultValue={lead.whatsapp4} />
+            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={lead.facebook_leads} />
             <FormField label="女包群" name="handbag_group" type="number" required min={0} defaultValue={lead.handbag_group} />
             <FormField label="双肩包群" name="backpack_group" type="number" required min={0} defaultValue={lead.backpack_group} />
           </div>
@@ -60,7 +61,7 @@ export default async function EditDailyLeadPage({
 
         <FormSection
           title="特殊情况 / 手动修正"
-          description="正常情况下不用填写手动增加数；只有换群、历史数据修正、WhatsApp2 / WhatsApp3 中途启用等情况，才需要手动覆盖系统计算值。"
+          description="正常情况下不用填写手动增加数；只有换群、历史数据修正、WhatsApp2 / WhatsApp3 / WhatsApp4 中途启用等情况，才需要手动覆盖系统计算值。"
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
@@ -81,7 +82,7 @@ export default async function EditDailyLeadPage({
               />
               是否双肩包群换群/重置
             </label>
-            <FormField label="手动总增加数" name="total_increase_override" type="number" defaultValue={lead.total_increase_override ?? ""} />
+            <FormField label="手动总潜客增加" name="total_increase_override" type="number" defaultValue={lead.total_increase_override ?? ""} />
             <FormField label="手动女包群增加数" name="handbag_group_increase_override" type="number" defaultValue={lead.handbag_group_increase_override ?? ""} />
             <FormField label="手动双肩包群增加数" name="backpack_group_increase_override" type="number" defaultValue={lead.backpack_group_increase_override ?? ""} />
           </div>
@@ -92,7 +93,7 @@ export default async function EditDailyLeadPage({
 
         <FormSection title="当前系统计算结果" description="以下字段由数据库计算，仅展示，不可手动编辑。">
           <div className="grid gap-3 md:grid-cols-3">
-            <ResultCard label="当前总增加数" value={lead.total_increase} />
+            <ResultCard label="当前总潜客增加" value={lead.total_increase} />
             <ResultCard label="当前增加数-女包群" value={lead.handbag_group_increase} />
             <ResultCard label="当前增加数-双肩包群" value={lead.backpack_group_increase} />
           </div>

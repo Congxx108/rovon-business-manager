@@ -39,6 +39,7 @@ function dailyLeadPayload(formData: FormData) {
     whatsapp1: numberValue(formData, "whatsapp1"),
     whatsapp2: numberValue(formData, "whatsapp2"),
     whatsapp3: numberValue(formData, "whatsapp3"),
+    whatsapp4: numberValue(formData, "whatsapp4"),
     handbag_group: numberValue(formData, "handbag_group"),
     backpack_group: numberValue(formData, "backpack_group"),
   };
@@ -62,11 +63,12 @@ export async function createDailyLead(formData: FormData) {
   const whatsapp1 = numberValue(formData, "whatsapp1");
   const whatsapp2 = numberValue(formData, "whatsapp2");
   const whatsapp3 = numberValue(formData, "whatsapp3");
+  const whatsapp4 = numberValue(formData, "whatsapp4");
   const handbagGroup = numberValue(formData, "handbag_group");
   const backpackGroup = numberValue(formData, "backpack_group");
 
   if (!statDate) redirectWithDailyLeadError("日期不能为空");
-  if ([facebookLeads, whatsapp1, whatsapp2, whatsapp3, handbagGroup, backpackGroup].some((value) => value < 0)) {
+  if ([facebookLeads, whatsapp1, whatsapp2, whatsapp3, whatsapp4, handbagGroup, backpackGroup].some((value) => value < 0)) {
     redirectWithDailyLeadError("潜客和群人数不能小于 0");
   }
 
@@ -76,6 +78,7 @@ export async function createDailyLead(formData: FormData) {
     whatsapp1,
     whatsapp2,
     whatsapp3,
+    whatsapp4,
     handbag_group: handbagGroup,
     backpack_group: backpackGroup,
   };
@@ -91,6 +94,7 @@ export async function createDailyLead(formData: FormData) {
         whatsapp1: String(whatsapp1),
         whatsapp2: String(whatsapp2),
         whatsapp3: String(whatsapp3),
+        whatsapp4: String(whatsapp4),
         handbag_group: String(handbagGroup),
         backpack_group: String(backpackGroup),
       });
@@ -141,6 +145,7 @@ export async function quickCreateDailyLead(formData: FormData) {
         whatsapp1: String(payload.whatsapp1),
         whatsapp2: String(payload.whatsapp2),
         whatsapp3: String(payload.whatsapp3),
+        whatsapp4: String(payload.whatsapp4),
         handbag_group: String(payload.handbag_group),
         backpack_group: String(payload.backpack_group),
       });
@@ -182,6 +187,7 @@ export async function updateExistingDailyLead(formData: FormData) {
   const whatsapp1 = numberValue(formData, "whatsapp1");
   const whatsapp2 = numberValue(formData, "whatsapp2");
   const whatsapp3 = numberValue(formData, "whatsapp3");
+  const whatsapp4 = numberValue(formData, "whatsapp4");
   const handbagGroup = numberValue(formData, "handbag_group");
   const backpackGroup = numberValue(formData, "backpack_group");
 
@@ -194,6 +200,7 @@ export async function updateExistingDailyLead(formData: FormData) {
       whatsapp1,
       whatsapp2,
       whatsapp3,
+      whatsapp4,
       handbag_group: handbagGroup,
       backpack_group: backpackGroup,
     })
@@ -226,11 +233,12 @@ export async function updateDailyLead(id: string, formData: FormData) {
   const whatsapp1 = numberValue(formData, "whatsapp1");
   const whatsapp2 = numberValue(formData, "whatsapp2");
   const whatsapp3 = numberValue(formData, "whatsapp3");
+  const whatsapp4 = numberValue(formData, "whatsapp4");
   const handbagGroup = numberValue(formData, "handbag_group");
   const backpackGroup = numberValue(formData, "backpack_group");
 
   if (!statDate) redirectWithEditDailyLeadError(id, "日期不能为空");
-  if ([facebookLeads, whatsapp1, whatsapp2, whatsapp3, handbagGroup, backpackGroup].some((value) => value < 0)) {
+  if ([facebookLeads, whatsapp1, whatsapp2, whatsapp3, whatsapp4, handbagGroup, backpackGroup].some((value) => value < 0)) {
     redirectWithEditDailyLeadError(id, "潜客和群人数不能小于 0");
   }
 
@@ -243,6 +251,7 @@ export async function updateDailyLead(id: string, formData: FormData) {
       whatsapp1,
       whatsapp2,
       whatsapp3,
+      whatsapp4,
       handbag_group: handbagGroup,
       backpack_group: backpackGroup,
     })

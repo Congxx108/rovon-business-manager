@@ -1,3 +1,4 @@
+import { formatFacebookShare } from "@/lib/daily-lead-metrics";
 import { AppShell } from "@/components/app-shell";
 import { CsvExportButton } from "@/components/csv-export-button";
 import { FormField } from "@/components/form-field";
@@ -24,6 +25,7 @@ export default async function DailyLeadsPage({
     whatsapp1?: string;
     whatsapp2?: string;
     whatsapp3?: string;
+    whatsapp4?: string;
     handbag_group?: string;
     backpack_group?: string;
   }>;
@@ -32,11 +34,14 @@ export default async function DailyLeadsPage({
   const [result, exportResult] = await Promise.all([getDailyLeads(90), getDailyLeads(10000)]);
   const exportRows = exportResult.data.map((lead) => ({
     日期: lead.stat_date,
-    Facebook后台潜在客户: lead.facebook_leads,
     WhatsApp1: lead.whatsapp1,
     WhatsApp2: lead.whatsapp2,
     WhatsApp3: lead.whatsapp3,
-    总增加数: lead.total_increase,
+    WhatsApp4: lead.whatsapp4,
+    总潜客增加: lead.total_increase,
+    Facebook后台潜在客户: lead.facebook_leads,
+    FB增加: lead.facebook_increase,
+    FB占比: formatFacebookShare(lead.facebook_share),
     女包群: lead.handbag_group,
     "增加数-女包群": lead.handbag_group_increase,
     双肩包群: lead.backpack_group,
@@ -53,7 +58,7 @@ export default async function DailyLeadsPage({
     <AppShell>
       <PageHeader
         title="每日潜客统计"
-        description="每天只填写累计数，系统会自动计算每日增加数；换群、历史修正等特殊情况可以在编辑页手动修正增加数。"
+        description="WhatsApp1～4 是最终有效潜客池；Facebook 为辅助指标，不计入总潜客增加。每天只填写累计数，系统会自动计算每日增加数；换群、历史修正等特殊情况可以在编辑页手动修正增加数。"
         actionHref="/daily-leads/import"
         actionLabel="导入每日统计"
       />
@@ -70,15 +75,16 @@ export default async function DailyLeadsPage({
       <details className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70" open>
         <summary className="cursor-pointer text-base font-semibold text-slate-950 transition hover:text-blue-700">展开/收起快速录入今日统计</summary>
         <p className="mt-2 text-sm text-slate-500">
-          正常情况下只填累计数；总增加数、女包群增加数、双肩包群增加数会由系统自动计算。
+          正常情况下只填累计数；总潜客增加、女包群增加数、双肩包群增加数会由系统自动计算。
         </p>
         <form action={quickCreateDailyLead} className="mt-4">
           <div className="grid gap-4 md:grid-cols-3">
             <FormField label="日期" name="stat_date" type="date" required defaultValue={params.stat_date ?? todayString()} />
-            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={params.facebook_leads ?? 0} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={params.whatsapp1 ?? 0} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={params.whatsapp2 ?? 0} />
             <FormField label="WhatsApp3" name="whatsapp3" type="number" required min={0} defaultValue={params.whatsapp3 ?? 0} />
+            <FormField label="WhatsApp4" name="whatsapp4" type="number" required min={0} defaultValue={params.whatsapp4 ?? 0} />
+            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={params.facebook_leads ?? 0} />
             <FormField label="女包群" name="handbag_group" type="number" required min={0} defaultValue={params.handbag_group ?? 0} />
             <FormField label="双肩包群" name="backpack_group" type="number" required min={0} defaultValue={params.backpack_group ?? 0} />
           </div>
@@ -89,14 +95,17 @@ export default async function DailyLeadsPage({
       </details>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1350px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="w-full min-w-[1850px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
             <col className="w-[100px]" />
-            <col className="w-[170px]" />
             <col className="w-[110px]" />
             <col className="w-[110px]" />
             <col className="w-[110px]" />
             <col className="w-[110px]" />
+            <col className="w-[120px]" />
+            <col className="w-[180px]" />
+            <col className="w-[100px]" />
+            <col className="w-[100px]" />
             <col className="w-[110px]" />
             <col className="w-[130px]" />
             <col className="w-[110px]" />
@@ -107,11 +116,14 @@ export default async function DailyLeadsPage({
           <thead className={tableHeadClassName}>
             <tr>
               <th className="px-4 py-3 font-medium">日期</th>
-              <th className="px-4 py-3 text-right font-medium">Facebook后台潜在客户</th>
               <th className="px-4 py-3 text-right font-medium">WhatsApp1</th>
               <th className="px-4 py-3 text-right font-medium">WhatsApp2</th>
               <th className="px-4 py-3 text-right font-medium">WhatsApp3</th>
-              <th className="px-4 py-3 text-right font-medium">总增加数</th>
+              <th className="px-4 py-3 text-right font-medium">WhatsApp4</th>
+              <th className="px-4 py-3 text-right font-medium">总潜客增加</th>
+              <th className="px-4 py-3 text-right font-medium">Facebook后台潜在客户</th>
+              <th className="px-4 py-3 text-right font-medium">FB增加</th>
+              <th className="px-4 py-3 text-right font-medium">FB占比</th>
               <th className="px-4 py-3 text-right font-medium">女包群</th>
               <th className="px-4 py-3 text-right font-medium">增加数-女包群</th>
               <th className="px-4 py-3 text-right font-medium">双肩包群</th>
@@ -125,11 +137,14 @@ export default async function DailyLeadsPage({
               result.data.map((lead) => (
                 <tr key={lead.id} className={tableRowClassName}>
                   <td className="px-4 py-3 font-medium">{lead.stat_date}</td>
-                  <td className="px-4 py-3 text-right">{formatNumber(lead.facebook_leads)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp1)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp2)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp3)}</td>
+                  <td className="px-4 py-3 text-right">{formatNumber(lead.whatsapp4)}</td>
                   <td className="px-4 py-3 text-right"><IncreaseBadge value={lead.total_increase} manual={lead.total_increase_override !== null} /></td>
+                  <td className="px-4 py-3 text-right">{formatNumber(lead.facebook_leads)}</td>
+                  <td className="px-4 py-3 text-right">{formatSigned(lead.facebook_increase)}</td>
+                  <td className="px-4 py-3 text-right">{formatFacebookShare(lead.facebook_share)}</td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.handbag_group)}</td>
                   <td className="px-4 py-3 text-right"><IncreaseBadge value={lead.handbag_group_increase} manual={lead.handbag_group_increase_override !== null} /></td>
                   <td className="px-4 py-3 text-right">{formatNumber(lead.backpack_group)}</td>
@@ -142,7 +157,7 @@ export default async function DailyLeadsPage({
               ))
             ) : (
               <tr>
-                <td className="px-4 py-8 text-slate-500" colSpan={12}>暂无每日潜客数据，请先新增或导入每日潜客统计</td>
+                <td className="px-4 py-8 text-slate-500" colSpan={15}>暂无每日潜客数据，请先新增或导入每日潜客统计</td>
               </tr>
             )}
           </tbody>
@@ -190,6 +205,7 @@ function ExistingDateNotice({
     whatsapp1?: string;
     whatsapp2?: string;
     whatsapp3?: string;
+    whatsapp4?: string;
     handbag_group?: string;
     backpack_group?: string;
   };
@@ -198,7 +214,7 @@ function ExistingDateNotice({
     <div className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
       <div className="font-medium">该日期已存在，确认后将更新这一天的数据，不会新增重复记录。</div>
       <form action={quickUpdateExistingDailyLead} className="mt-3 flex flex-wrap gap-3">
-        {["stat_date", "facebook_leads", "whatsapp1", "whatsapp2", "whatsapp3", "handbag_group", "backpack_group"].map((name) => (
+        {["stat_date", "facebook_leads", "whatsapp1", "whatsapp2", "whatsapp3", "whatsapp4", "handbag_group", "backpack_group"].map((name) => (
           <input key={name} type="hidden" name={name} value={params[name as keyof typeof params] ?? ""} />
         ))}
         <Button type="submit" variant="warning">更新这一天的数据</Button>

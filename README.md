@@ -105,7 +105,7 @@ npm run dev
 
 7. 订单导入后检查 `/customers` 和 `/dashboard`，确认客户统计、总销售额、订单数、销售数量是否合理。
 
-8. 再进入 `/daily-leads/import` 下载每日潜客导入模板，上传每日潜客 CSV。同日期记录会覆盖更新，CSV 中的增加数字段只用于校验，系统会重新计算。
+8. 再进入 `/daily-leads/import` 下载每日潜客导入模板，上传每日潜客 CSV。同日期记录会覆盖更新，CSV 中的增加数字段默认只用于校验，系统按 WhatsApp1～4 重新计算；勾选保留后仅为尚无人工值的字段填入 override，已有人工值（含0）不覆盖。
 
 9. 每日潜客导入后检查 `/daily-leads` 和 `/data-check`，重点核对日期范围、最近 7 条记录、三个增加数字段合计以及差异提示。
 
@@ -188,8 +188,14 @@ npm run dev
 - 第二阶段把每日潜客增量改为 `recalculate_daily_leads()` 全量重算。每次 `daily_leads` insert/update/delete 后，按 `stat_date` 顺序重新计算所有记录的三个增加数字段，避免修改中间日期或修改日期时出现边界错误。
 - 第三阶段新增 CSV 导入。Excel 暂时请先另存为 CSV；导入预览在浏览器端完成，提交后服务端会再次校验。
 - 订单导入字段映射：`时间`、`Whatsapp号码`、`姓名`、`销售额`、`个数`、`备注`、`合同号`、`国家/渠道`、`产品线`。
-- 每日潜客导入字段映射：`日期`、`客户` 或 `Facebook后台潜在客户`、`WhatsApp1`、`WhatsApp2`、`女包群`、`书包群人数` 或 `双肩包群`。CSV 中的三个增加数字段只用于校验，不直接写入。
+- 每日潜客导入字段映射：`日期`、`客户` 或 `Facebook后台潜在客户`、`WhatsApp1`、`WhatsApp2`、`WhatsApp3`、`WhatsApp4`、`女包群`、`书包群人数` 或 `双肩包群`。CSV 中的三个增加数字段默认仅校验；明确勾选保留后仅填入尚无人工修正的字段。WhatsApp4 缺列/空白时已有日期保留原值，新日期默认0。
 - 订单销售统计使用 `sales_amount_effective_rmb` 生成列：取消/退款订单为 `0`，否则等于 `sales_amount_rmb`。
 - 客户统计由 `refresh_customers_from_orders()` 从有效订单汇总生成。匹配规则为优先 `contact`，没有 `contact` 时使用 `customer_name + country`。新增订单成功后会自动刷新客户统计，客户页也提供手动刷新入口。
 - `main_product_line` 第二阶段取该客户最近一笔有效订单的产品线，逻辑简单稳定，后续需要时再升级为“出现次数最多”。
 - 第四阶段新增编辑能力。订单编辑保存后调用 `refresh_customers_from_orders()`；每日潜客编辑依赖数据库触发器调用 `recalculate_daily_leads()`；客户只允许编辑人工跟进字段，不手动改自动统计字段。
+
+### 每日潜客统计口径（2026-09-18）
+
+WhatsApp1～4 是最终有效潜客池；`total_increase` 只统计四个 WhatsApp 的每日增量；Facebook 后台潜客保留为辅助指标，不参与总潜客增加计算。首条自动值为0，已有 total_increase_override（含0、负数）优先。修改历史记录继续全量重算，群数据和换群机制不变。FB增加/占比在查询层派生，并展示于历史表格与导出；无合理比例时显示 `-`。
+
+新增 migration：`supabase/migrations/20260918025512_add_whatsapp4_whatsapp_only_leads.sql`。它为历史记录补充 WhatsApp4=0，并统一重算最终增加数，保留所有原累计值和 override；Vercel push 部署不会代替执行 Supabase migration。

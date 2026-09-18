@@ -120,12 +120,12 @@ export function DashboardCharts({ period, monthlySales, countrySales, recentLead
           <div>
             <h2 className="text-lg font-semibold tracking-tight">每日潜客增长趋势</h2>
             <p className="mt-1 text-sm text-slate-500">
-              WhatsApp 群人数接近上限后会手动新建群，因此 Dashboard 重点观察每日增加数趋势，而不是群当前总人数。
+              总潜客增加仅统计 WhatsApp1～4，Facebook 不重复计入；历史人工修正值继续优先。群数据仍独立统计。
             </p>
           </div>
         </div>
         <div className="mt-4 grid gap-5 xl:grid-cols-3">
-          <LeadLineChart title="每日潜客新增" data={recentLeads} dataKey="total_increase" stroke="#0f172a" />
+          <LeadLineChart title="总潜客增加（WhatsApp1～4）" data={recentLeads} dataKey="total_increase" stroke="#0f172a" />
           <LeadLineChart title="女包群每日增加" data={recentLeads} dataKey="handbag_group_increase" stroke="#2563eb" />
           <LeadLineChart title="双肩包群每日增加" data={recentLeads} dataKey="backpack_group_increase" stroke="#059669" />
         </div>

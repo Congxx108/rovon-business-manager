@@ -40,7 +40,7 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
   const supabase = getSupabaseAdminClient();
   const { data, error } = await supabase
     .from("daily_leads")
-    .select("id,stat_date,facebook_leads,whatsapp1,whatsapp2,whatsapp3,total_increase,handbag_group,handbag_group_increase,backpack_group,backpack_group_increase");
+    .select("id,stat_date,facebook_leads,whatsapp1,whatsapp2,whatsapp3,whatsapp4,total_increase_override,total_increase,handbag_group,handbag_group_increase,backpack_group,backpack_group_increase");
 
   if (error) return { existingDates: [], differences: [] };
 
@@ -55,6 +55,8 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
       whatsapp1: Number(row.whatsapp1 ?? 0),
       whatsapp2: Number(row.whatsapp2 ?? 0),
       whatsapp3: Number(row.whatsapp3 ?? 0),
+      whatsapp4: Number(row.whatsapp4 ?? 0),
+      total_increase_override: row.total_increase_override,
       handbag_group: Number(row.handbag_group ?? 0),
       backpack_group: Number(row.backpack_group ?? 0),
     });
@@ -67,6 +69,8 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
       whatsapp1: row.whatsapp1,
       whatsapp2: row.whatsapp2,
       whatsapp3: row.whatsapp3 ?? 0,
+      whatsapp4: row.has_whatsapp4 ? row.whatsapp4 : (mergedRows.get(row.stat_date)?.whatsapp4 ?? 0),
+      total_increase_override: mergedRows.get(row.stat_date)?.total_increase_override ?? null,
       handbag_group: row.handbag_group,
       backpack_group: row.backpack_group,
     });
@@ -79,7 +83,7 @@ export async function getDailyLeadImportPreviewAction(rows: ParsedDailyLeadImpor
     const row = calculatedRows[index];
     const previous = calculatedRows[index - 1];
     calculatedByDate.set(row.stat_date, {
-      total: previous ? row.facebook_leads + row.whatsapp1 + row.whatsapp2 + row.whatsapp3 - (previous.facebook_leads + previous.whatsapp1 + previous.whatsapp2 + previous.whatsapp3) : 0,
+      total: row.total_increase_override ?? (previous ? row.whatsapp1 + row.whatsapp2 + row.whatsapp3 + row.whatsapp4 - (previous.whatsapp1 + previous.whatsapp2 + previous.whatsapp3 + previous.whatsapp4) : 0),
       handbag: previous ? row.handbag_group - previous.handbag_group : 0,
       backpack: previous ? row.backpack_group - previous.backpack_group : 0,
     });
@@ -124,18 +128,24 @@ export async function importDailyLeadsAction(
   const dedupedRows = Array.from(rowsByDate.values());
 
   const supabase = getSupabaseAdminClient();
+  const { data: existingData, error: existingError } = await supabase.from("daily_leads")
+    .select("stat_date,whatsapp4,total_increase_override,handbag_group_increase_override,backpack_group_increase_override,increase_note")
+    .in("stat_date", dedupedRows.map((row) => row.stat_date));
+  if (existingError) return { ok: false, message: "读取已有人工修正失败：" + existingError.message };
+  const existingByDate = new Map((existingData ?? []).map((row) => [row.stat_date, row]));
   const payload = dedupedRows.map((row) => ({
     stat_date: row.stat_date,
     facebook_leads: row.facebook_leads,
     whatsapp1: row.whatsapp1,
     whatsapp2: row.whatsapp2,
     whatsapp3: row.whatsapp3 ?? 0,
+    whatsapp4: row.has_whatsapp4 ? row.whatsapp4 : (existingByDate.get(row.stat_date)?.whatsapp4 ?? 0),
     handbag_group: row.handbag_group,
     backpack_group: row.backpack_group,
-    total_increase_override: preserveCsvIncreases ? row.csv_total_increase : null,
-    handbag_group_increase_override: preserveCsvIncreases ? row.csv_handbag_group_increase : null,
-    backpack_group_increase_override: preserveCsvIncreases ? row.csv_backpack_group_increase : null,
-    increase_note: preserveCsvIncreases ? "导入时保留 CSV 增加数作为手动修正值" : null,
+    total_increase_override: existingByDate.get(row.stat_date)?.total_increase_override ?? (preserveCsvIncreases ? row.csv_total_increase : null),
+    handbag_group_increase_override: existingByDate.get(row.stat_date)?.handbag_group_increase_override ?? (preserveCsvIncreases ? row.csv_handbag_group_increase : null),
+    backpack_group_increase_override: existingByDate.get(row.stat_date)?.backpack_group_increase_override ?? (preserveCsvIncreases ? row.csv_backpack_group_increase : null),
+    increase_note: existingByDate.get(row.stat_date)?.increase_note ?? (preserveCsvIncreases ? "导入时保留 CSV 增加数作为手动修正值" : null),
   }));
 
   const { error } = await supabase.from("daily_leads").upsert(payload, { onConflict: "stat_date" });
@@ -166,7 +176,7 @@ export async function importDailyLeadsAction(
   return {
     ok: true,
     message: preserveCsvIncreases
-      ? "每日潜客导入完成，已保留 CSV 增加数作为手动修正值。"
+      ? "每日潜客导入完成，已保留已有人工修正，并为未修正字段填入 CSV 增加数。"
       : differences.length
         ? "每日潜客导入完成，发现部分 CSV 增量与系统计算不一致。"
         : "每日潜客导入完成，CSV 增量与系统计算一致。",
@@ -184,6 +194,8 @@ type DailyLeadPreviewRow = {
   whatsapp1: number;
   whatsapp2: number;
   whatsapp3: number;
+  whatsapp4: number;
+  total_increase_override: number | null;
   handbag_group: number;
   backpack_group: number;
 };

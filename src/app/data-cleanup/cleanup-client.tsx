@@ -115,7 +115,7 @@ function DailyLeadsPreviewTable({ rows }: { rows: DataCleanupPreview["testDailyL
   return (
     <section className="overflow-x-auto rounded-md border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-4 py-3 font-semibold">将清理的每日潜客明细</div>
-      <table className="w-full min-w-[830px] text-left text-sm">
+      <table className="w-full min-w-[940px] text-left text-sm">
         <thead className="bg-slate-50 text-xs text-slate-500">
           <tr>
             <th className="px-4 py-3 font-medium">日期</th>
@@ -123,6 +123,7 @@ function DailyLeadsPreviewTable({ rows }: { rows: DataCleanupPreview["testDailyL
             <th className="px-4 py-3 font-medium">WhatsApp1</th>
             <th className="px-4 py-3 font-medium">WhatsApp2</th>
             <th className="px-4 py-3 font-medium">WhatsApp3</th>
+            <th className="px-4 py-3 font-medium">WhatsApp4</th>
             <th className="px-4 py-3 font-medium">女包群</th>
             <th className="px-4 py-3 font-medium">双肩包群</th>
           </tr>
@@ -135,13 +136,14 @@ function DailyLeadsPreviewTable({ rows }: { rows: DataCleanupPreview["testDailyL
               <td className="px-4 py-3">{formatNumber(row.whatsapp1)}</td>
               <td className="px-4 py-3">{formatNumber(row.whatsapp2)}</td>
               <td className="px-4 py-3">{formatNumber(row.whatsapp3)}</td>
+              <td className="px-4 py-3">{formatNumber(row.whatsapp4)}</td>
               <td className="px-4 py-3">{formatNumber(row.handbag_group)}</td>
               <td className="px-4 py-3">{formatNumber(row.backpack_group)}</td>
             </tr>
           ))}
           {!rows.length ? (
             <tr>
-              <td className="px-4 py-6 text-slate-500" colSpan={7}>
+              <td className="px-4 py-6 text-slate-500" colSpan={8}>
                 没有匹配到测试每日潜客记录。
               </td>
             </tr>
