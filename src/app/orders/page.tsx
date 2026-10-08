@@ -153,6 +153,7 @@ export default async function OrdersPage({
                   <td className={stickyActionCellClassName(order, isRepeatOrder)}>
                     <div className="flex min-w-[150px] flex-wrap gap-2">
                       <Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button>
+                      <Button href={`/trade-documents?order=${order.id}`} variant="ghost" className="h-8 px-3">单据（可选）</Button>
                       {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
                         <MarkShippedForm
                           orderId={order.id}

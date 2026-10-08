@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ClipboardCheck, ClipboardList, LayoutDashboard, Users } from "lucide-react";
+import { BarChart3, ClipboardCheck, ClipboardList, FileText, LayoutDashboard, Users } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/orders", label: "订单管理", icon: ClipboardList },
+  { href: "/trade-documents", label: "外贸单据", icon: FileText },
   { href: "/customers", label: "客户管理", icon: Users },
   { href: "/daily-leads", label: "每日潜客", icon: BarChart3 },
   { href: "/data-check", label: "数据检查", icon: ClipboardCheck },

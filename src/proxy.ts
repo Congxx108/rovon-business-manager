@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const protectedPrefixes = [
   "/dashboard",
   "/orders",
+  "/trade-documents",
   "/customers",
   "/daily-leads",
   "/data-check",
@@ -58,6 +59,7 @@ export const config = {
     "/login",
     "/dashboard/:path*",
     "/orders/:path*",
+    "/trade-documents/:path*",
     "/customers/:path*",
     "/daily-leads/:path*",
     "/data-check/:path*",

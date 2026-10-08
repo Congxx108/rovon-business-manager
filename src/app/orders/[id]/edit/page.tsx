@@ -30,6 +30,7 @@ export default async function EditOrderPage({
   return (
     <AppShell>
       <PageHeader title="编辑订单" description="修改订单后会自动刷新客户统计。删除订单暂不做物理删除，请使用取消/退款标记。" />
+      <div className="mb-5"><Button href={`/trade-documents?order=${order.id}`} variant="secondary">查看 / 制作单据（可选）</Button></div>
 
       {error ? <Message tone="error" text={error} /> : null}
       {orderItemsResult.error ? <Message tone="error" text={`订单明细读取失败：${orderItemsResult.error}`} /> : null}
