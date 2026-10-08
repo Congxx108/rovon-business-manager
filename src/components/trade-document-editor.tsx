@@ -1,16 +1,14 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
-  FormSection,
-  inputClassName,
-  labelClassName,
-  textareaClassName,
+  inputClassName as baseInputClassName,
+  textareaClassName as baseTextareaClassName,
 } from "@/components/ui";
 import {
-  DOCUMENT_TYPES,
+  TRADE_SELECT_OPTIONS,
   emptyGroup,
   emptyItem,
   localDate,
@@ -23,6 +21,30 @@ import {
   type TradeVersion,
 } from "@/lib/trade-documents/model";
 type OrderOption = { id: string; order_no: string; customer_name: string };
+const inputClassName = `${baseInputClassName} mt-1! h-9! min-w-0`;
+const textareaClassName = `${baseTextareaClassName} mt-1! min-w-0 py-1.5!`;
+const labelClassName = "block min-w-0 text-xs font-medium text-slate-700";
+function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="min-w-0 rounded-xl border border-slate-200/80 bg-white/95 p-3 shadow-sm sm:p-4">
+      <div className="mb-2 border-b border-slate-100 pb-2">
+        <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
+        {description && (
+          <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
 function Field({
   label,
   value,
@@ -30,6 +52,8 @@ function Field({
   type = "text",
   wide = false,
   readOnly = false,
+  className = "",
+  rows = 2,
 }: {
   label: string;
   value: string;
@@ -37,17 +61,17 @@ function Field({
   type?: string;
   wide?: boolean;
   readOnly?: boolean;
+  className?: string;
+  rows?: number;
 }) {
   return (
-    <label
-      className={wide ? `${labelClassName} md:col-span-2` : labelClassName}
-    >
+    <label className={`${labelClassName} ${className}`}>
       {label}
       {wide ? (
         <textarea
           aria-label={label}
           className={textareaClassName}
-          rows={2}
+          rows={rows}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           readOnly={readOnly}
@@ -62,6 +86,50 @@ function Field({
           readOnly={readOnly}
           step={type === "number" ? "any" : undefined}
           min={type === "number" ? "0" : undefined}
+        />
+      )}
+    </label>
+  );
+}
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: readonly string[];
+}) {
+  const [custom, setCustom] = useState(!!value && !options.includes(value));
+  return (
+    <label className={labelClassName}>
+      {label}
+      <select
+        aria-label={label}
+        className={inputClassName}
+        value={custom ? "__custom__" : value}
+        onChange={(e) => {
+          const next = e.target.value;
+          setCustom(next === "__custom__");
+          onChange(next === "__custom__" ? "" : next);
+        }}
+      >
+        <option value="">请选择</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+        <option value="__custom__">其他（手动填写）</option>
+      </select>
+      {custom && (
+        <input
+          aria-label={`自定义${label}`}
+          className={inputClassName}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
         />
       )}
     </label>
@@ -132,7 +200,10 @@ export function TradeDocumentEditor({
         ? `/api/trade-documents/${initial.id}/pdf?revision=${initial.revision}`
         : "",
     ),
-    [dirty, setDirty] = useState(!initial);
+    [dirty, setDirty] = useState(!initial),
+    [bankOpen, setBankOpen] = useState(
+      !initialData.bank_profile_id || !!initialData.bank_override,
+    );
   const locked = saved?.status === "void",
     disabled = !!busy || locked;
   function change(next: TradeData) {
@@ -169,6 +240,7 @@ export function TradeDocumentEditor({
   }
   function selectBank(id: string, currency = data.currency) {
     const bank = settings.banks.find((b) => b.id === id);
+    setBankOpen(!bank);
     change({
       ...data,
       currency,
@@ -288,8 +360,8 @@ export function TradeDocumentEditor({
     /* Allow incomplete numeric text while typing; server validates on save. */
   }
   return (
-    <div className="space-y-5">
-      <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+    <div className="space-y-3">
+      <div className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm leading-5 text-blue-900">
         客户需要时才制作。单据可以不关联订单，PI
         未成单可保留；保存、出具或作废均不改变订单与经营统计。
       </div>
@@ -330,18 +402,14 @@ export function TradeDocumentEditor({
           ))}
         </div>
       )}
-      <fieldset disabled={disabled} className="space-y-5 disabled:opacity-80">
+      <fieldset disabled={disabled} className="space-y-3 disabled:opacity-80">
         <FormSection
           title="单据与关联"
           description="编号留空自动生成。关联订单只建立关系，不会覆盖单据内容。"
         >
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <Field
-              label="单据类型"
-              value={DOCUMENT_TYPES[type]}
-              onChange={() => {}}
-              readOnly
-            />
+          <div
+            className={`grid gap-2 sm:grid-cols-2 ${type === "pi" ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}
+          >
             <Field
               label="单据编号"
               value={no}
@@ -362,6 +430,7 @@ export function TradeDocumentEditor({
             <label className={labelClassName}>
               关联订单（可选）
               <select
+                aria-label="关联订单（可选）"
                 className={inputClassName}
                 value={orderId}
                 onChange={(e) => {
@@ -392,45 +461,50 @@ export function TradeDocumentEditor({
             )}
           </div>
         </FormSection>
-        {(["buyer", "seller"] as const).map((key) => (
-          <FormSection
-            key={key}
-            title={key === "buyer" ? "买方资料" : "卖方资料"}
-            description={
-              key === "seller"
-                ? "本单保存独立副本，设置更新不会修改历史单据。"
-                : undefined
-            }
-          >
-            <div className="grid gap-3 md:grid-cols-2">
-              <Field
-                label="公司 / 名称"
-                value={data[key].name}
-                onChange={(v) => party(key, "name", v)}
-              />
-              <Field
-                label="联系人"
-                value={data[key].contact}
-                onChange={(v) => party(key, "contact", v)}
-              />
-              <Field
-                label="联系方式"
-                value={data[key].phone}
-                onChange={(v) => party(key, "phone", v)}
-              />
-              <Field
-                label="详细地址（含国家）"
-                value={data[key].address}
-                onChange={(v) => party(key, "address", v)}
-                wide
-              />
-            </div>
-          </FormSection>
-        ))}
+        <div className="grid gap-3 xl:grid-cols-2">
+          {(["buyer", "seller"] as const).map((key) => (
+            <FormSection
+              key={key}
+              title={key === "buyer" ? "买方资料" : "卖方资料"}
+              description={
+                key === "seller"
+                  ? "本单保存独立副本，设置更新不会修改历史单据。"
+                  : undefined
+              }
+            >
+              <div className="grid grid-cols-2 gap-2">
+                <Field
+                  className="col-span-2"
+                  label="公司 / 名称"
+                  value={data[key].name}
+                  onChange={(v) => party(key, "name", v)}
+                />
+                <Field
+                  label="联系人"
+                  value={data[key].contact}
+                  onChange={(v) => party(key, "contact", v)}
+                />
+                <Field
+                  label="联系方式"
+                  value={data[key].phone}
+                  onChange={(v) => party(key, "phone", v)}
+                />
+                <Field
+                  label="详细地址（含国家）"
+                  value={data[key].address}
+                  onChange={(v) => party(key, "address", v)}
+                  className="col-span-2"
+                  wide
+                />
+              </div>
+            </FormSection>
+          ))}
+        </div>
         <FormSection title="交易与运输">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <Field
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <SelectField
               label="贸易条款"
+              options={TRADE_SELECT_OPTIONS.incoterms}
               value={data.incoterm}
               onChange={(v) => patch("incoterm", v)}
             />
@@ -444,6 +518,7 @@ export function TradeDocumentEditor({
                 <label className={labelClassName}>
                   单据币种
                   <select
+                    aria-label="单据币种"
                     className={inputClassName}
                     value={data.currency}
                     onChange={(e) => {
@@ -463,13 +538,15 @@ export function TradeDocumentEditor({
                     )}
                   </select>
                 </label>
-                <Field
+                <SelectField
                   label="付款条款"
+                  options={TRADE_SELECT_OPTIONS.payment_terms}
                   value={data.payment_terms}
                   onChange={(v) => patch("payment_terms", v)}
                 />
-                <Field
+                <SelectField
                   label="付款方式"
+                  options={TRADE_SELECT_OPTIONS.payment_methods}
                   value={data.payment_method}
                   onChange={(v) => patch("payment_method", v)}
                 />
@@ -523,9 +600,9 @@ export function TradeDocumentEditor({
             {data.items.map((item, i) => (
               <div
                 key={item.id}
-                className="rounded-xl border border-slate-200 bg-slate-50/60 p-4"
+                className="rounded-lg border border-slate-200 bg-slate-50/60 p-3"
               >
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between">
                   <h3 className="text-sm font-semibold">商品 {i + 1}</h3>
                   <Button
                     variant="ghost"
@@ -540,30 +617,32 @@ export function TradeDocumentEditor({
                     移除
                   </Button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  <Field
-                    label="英文描述"
-                    value={item.description}
-                    onChange={(v) => updateItem(i, "description", v)}
-                    wide
-                  />
-                  <Field
-                    label="数量（件）"
-                    type="number"
-                    value={item.quantity}
-                    onChange={(v) => updateItem(i, "quantity", v)}
-                  />
-                  {type !== "packing" ? (
-                    <>
-                      <Field
-                        label="规格 / 型号"
-                        value={item.model}
-                        onChange={(v) => updateItem(i, "model", v)}
-                      />
+                {type !== "packing" ? (
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)_auto]">
+                    <Field
+                      label="英文描述"
+                      value={item.description}
+                      onChange={(v) => updateItem(i, "description", v)}
+                      wide
+                      className="sm:col-span-2 xl:col-span-1"
+                    />
+                    <Field
+                      label="规格 / 型号"
+                      value={item.model}
+                      onChange={(v) => updateItem(i, "model", v)}
+                      className="sm:col-span-2 xl:col-span-1"
+                    />
+                    <div className="grid grid-cols-[4.5rem_minmax(0,1fr)_minmax(0,1.2fr)] gap-2 sm:col-span-2 xl:col-span-1 xl:w-[21rem]">
                       <Field
                         label="单位"
                         value={item.unit}
                         onChange={(v) => updateItem(i, "unit", v)}
+                      />
+                      <Field
+                        label="数量（件）"
+                        type="number"
+                        value={item.quantity}
+                        onChange={(v) => updateItem(i, "quantity", v)}
                       />
                       <Field
                         label={`成交单价（${data.currency}）`}
@@ -571,56 +650,77 @@ export function TradeDocumentEditor({
                         value={item.unit_price}
                         onChange={(v) => updateItem(i, "unit_price", v)}
                       />
-                    </>
-                  ) : (
-                    <>
-                      <Field
-                        label="中文品名"
-                        value={item.chinese_name}
-                        onChange={(v) => updateItem(i, "chinese_name", v)}
-                      />
-                      <Field
-                        label="材质"
-                        value={item.material}
-                        onChange={(v) => updateItem(i, "material", v)}
-                      />
-                      <Field
-                        label="HS Code"
-                        value={item.hs_code}
-                        onChange={(v) => updateItem(i, "hs_code", v)}
-                      />
-                      <Field
-                        label="品牌信息"
-                        value={item.brand}
-                        onChange={(v) => updateItem(i, "brand", v)}
-                      />
-                      <Field
-                        label="电池信息"
-                        value={item.battery}
-                        onChange={(v) => updateItem(i, "battery", v)}
-                      />
-                      <label className={labelClassName}>
-                        装箱组
-                        <select
-                          aria-label="装箱组"
-                          className={inputClassName}
-                          value={item.packing_group}
-                          onChange={(e) =>
-                            updateItem(i, "packing_group", e.target.value)
-                          }
-                        >
-                          <option value="">请选择</option>
-                          {data.packing_groups.map((g, j) => (
-                            <option key={g.id} value={g.id}>
-                              {g.label || `装箱组 ${j + 1}`}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </>
-                  )}
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 xl:grid-cols-12">
+                    <Field
+                      label="英文描述"
+                      value={item.description}
+                      onChange={(v) => updateItem(i, "description", v)}
+                      wide
+                      className="col-span-2 xl:col-span-4"
+                    />
+                    <Field
+                      label="中文品名"
+                      value={item.chinese_name}
+                      onChange={(v) => updateItem(i, "chinese_name", v)}
+                      className="xl:col-span-2"
+                    />
+                    <Field
+                      label="材质"
+                      value={item.material}
+                      onChange={(v) => updateItem(i, "material", v)}
+                      className="xl:col-span-2"
+                    />
+                    <Field
+                      label="HS Code"
+                      value={item.hs_code}
+                      onChange={(v) => updateItem(i, "hs_code", v)}
+                      className="xl:col-span-2"
+                    />
+                    <Field
+                      label="数量（件）"
+                      type="number"
+                      value={item.quantity}
+                      onChange={(v) => updateItem(i, "quantity", v)}
+                      className="xl:col-span-2"
+                    />
+                    <Field
+                      label="品牌信息"
+                      value={item.brand}
+                      onChange={(v) => updateItem(i, "brand", v)}
+                      className="xl:col-span-2"
+                    />
+                    <Field
+                      label="电池信息"
+                      value={item.battery}
+                      onChange={(v) => updateItem(i, "battery", v)}
+                      className="xl:col-span-2"
+                    />
+                    <label
+                      className={`${labelClassName} col-span-2 xl:col-span-8`}
+                    >
+                      装箱组
+                      <select
+                        aria-label="装箱组"
+                        className={inputClassName}
+                        value={item.packing_group}
+                        onChange={(e) =>
+                          updateItem(i, "packing_group", e.target.value)
+                        }
+                      >
+                        <option value="">请选择</option>
+                        {data.packing_groups.map((g, j) => (
+                          <option key={g.id} value={g.id}>
+                            {g.label || `装箱组 ${j + 1}`}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <label className="text-sm text-slate-600">
                     商品图片
                     <input
@@ -677,7 +777,7 @@ export function TradeDocumentEditor({
               {data.packing_groups.map((g, i) => (
                 <div
                   key={g.id}
-                  className="rounded-xl border border-slate-200 p-4"
+                  className="rounded-lg border border-slate-200 p-3"
                 >
                   <div className="mb-3 flex justify-between">
                     <span className="text-sm font-semibold">
@@ -702,7 +802,7 @@ export function TradeDocumentEditor({
                       移除
                     </Button>
                   </div>
-                  <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
                     {(
                       [
                         ["label", "组名称 / 箱号"],
@@ -716,6 +816,7 @@ export function TradeDocumentEditor({
                     ).map(([key, label]) => (
                       <Field
                         key={key}
+                        className={key === "label" ? "col-span-2" : ""}
                         label={label}
                         type={key === "label" ? "text" : "number"}
                         value={g[key]}
@@ -746,9 +847,10 @@ export function TradeDocumentEditor({
               title="收款账户"
               description="按币种和 PI / CI 原表配置选择，允许本单编辑或手动覆盖。"
             >
-              <label className={labelClassName}>
+              <label className={`${labelClassName} max-w-md`}>
                 银行配置
                 <select
+                  aria-label="银行配置"
                   className={inputClassName}
                   value={data.bank_profile_id}
                   onChange={(e) => selectBank(e.target.value)}
@@ -763,48 +865,71 @@ export function TradeDocumentEditor({
                     ))}
                 </select>
               </label>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                {(
-                  [
-                    ["bank_name", "银行名称"],
-                    ["account_name", "账户名称"],
-                    ["account_no", "账号"],
-                    ["swift", "SWIFT / 本地代码"],
-                    ["address", "银行地址"],
-                    ["remark", "银行备注"],
-                  ] as const
-                ).map(([key, label]) => (
+              <details
+                className="mt-2"
+                open={bankOpen}
+                onToggle={(e) => setBankOpen(e.currentTarget.open)}
+              >
+                <summary className="cursor-pointer text-xs font-medium text-blue-700">
+                  编辑本单账户 / 手动覆盖
+                </summary>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                  {(
+                    [
+                      ["bank_name", "银行名称"],
+                      ["account_name", "账户名称"],
+                      ["account_no", "账号"],
+                      ["swift", "SWIFT / 本地代码"],
+                      ["address", "银行地址"],
+                      ["remark", "银行备注"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <Field
+                      key={key}
+                      label={label}
+                      value={data.bank[key]}
+                      onChange={(v) =>
+                        patch("bank", { ...data.bank, [key]: v })
+                      }
+                      className="sm:col-span-2"
+                      rows={key === "account_name" ? 1 : 2}
+                      wide={key === "address" || key === "account_name"}
+                    />
+                  ))}
                   <Field
-                    key={key}
-                    label={label}
-                    value={data.bank[key]}
-                    onChange={(v) => patch("bank", { ...data.bank, [key]: v })}
-                    wide={key === "address" || key === "account_name"}
+                    label="手动覆盖完整银行信息（可选）"
+                    value={data.bank_override}
+                    onChange={(v) => patch("bank_override", v)}
+                    className="sm:col-span-2 xl:col-span-4"
+                    wide
                   />
-                ))}
-                <Field
-                  label="手动覆盖完整银行信息（可选）"
-                  value={data.bank_override}
-                  onChange={(v) => patch("bank_override", v)}
-                  wide
-                />
+                </div>
+              </details>
+            </FormSection>
+            <details className="rounded-xl border border-slate-200 bg-white/95 p-3 sm:p-4">
+              <summary className="cursor-pointer text-sm font-semibold text-slate-950">
+                条款{" "}
+                <span className="ml-2 text-xs font-normal text-slate-500">
+                  {data.terms.filter(Boolean).length} 条 · 点击编辑
+                </span>
+              </summary>
+              <div className="mt-2">
+                <label className={labelClassName}>
+                  每行一条，最多四条
+                  <textarea
+                    aria-label="每行一条，最多四条"
+                    rows={5}
+                    className={textareaClassName}
+                    value={data.terms.join("\n")}
+                    onChange={(e) => patch("terms", e.target.value.split("\n"))}
+                  />
+                </label>
               </div>
-            </FormSection>
-            <FormSection title="条款">
-              <label className={labelClassName}>
-                每行一条，最多四条
-                <textarea
-                  rows={5}
-                  className={textareaClassName}
-                  value={data.terms.join("\n")}
-                  onChange={(e) => patch("terms", e.target.value.split("\n"))}
-                />
-              </label>
-            </FormSection>
+            </details>
           </>
         ) : (
           <FormSection title="备注与声明">
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-2 md:grid-cols-2">
               <Field
                 label="备注"
                 value={data.remark}
@@ -821,7 +946,7 @@ export function TradeDocumentEditor({
           </FormSection>
         )}
       </fieldset>
-      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-lg backdrop-blur">
+      <div className="sticky bottom-2 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-lg backdrop-blur [&_button]:h-9 [&_a]:h-9">
         <span className="mr-auto text-sm text-slate-700">
           {total
             ? type === "packing"

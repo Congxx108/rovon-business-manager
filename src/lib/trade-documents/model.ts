@@ -4,6 +4,12 @@ export const DOCUMENT_TYPES = {
   packing: "Packing List 装箱单",
 } as const;
 export type DocumentType = keyof typeof DOCUMENT_TYPES;
+// List validations in both original PI / CI templates (A16, D16, G16).
+export const TRADE_SELECT_OPTIONS = {
+  incoterms: ["EXW", "FOB"],
+  payment_terms: ["Pay in Full", "T/T"],
+  payment_methods: ["Alipay", "WeChat pay", "Bank Transfer", "Cash"],
+} as const;
 export type BankProfile = {
   id: string;
   name: string;
