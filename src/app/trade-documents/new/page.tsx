@@ -27,7 +27,7 @@ export default async function NewTradeDocumentPage({
     readSettings(),
     getOrders({}, 200),
   ]);
-  let data = newTradeData(settings.data, type),
+  let data = newTradeData(settings.data),
     orderId = p.order ?? "",
     sourceId: string | null = null;
   if (p.copy) {
@@ -41,23 +41,6 @@ export default async function NewTradeDocumentPage({
           ? source.data.invoice_reference
           : source.document_no;
     if (type !== "pi") data.valid_until = "";
-    if (type !== source.document_type && type !== "packing") {
-      const b = settings.data.banks.find(
-        (b) => b.document_type === type && b.currency === data.currency,
-      );
-      if (b) {
-        data.bank_profile_id = b.id;
-        data.bank = {
-          bank_name: b.bank_name,
-          account_name: b.account_name,
-          account_no: b.account_no,
-          swift: b.swift,
-          address: b.address,
-          remark: b.remark,
-        };
-        data.bank_override = "";
-      }
-    }
   } else if (orderId) {
     const result = await getOrderById(requireUuid(orderId));
     if (!result.data) throw new Error("关联订单不存在");

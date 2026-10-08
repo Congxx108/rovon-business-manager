@@ -14,7 +14,7 @@ export type BankProfile = {
   id: string;
   name: string;
   currency: string;
-  document_type: "pi" | "ci";
+  legacy_ids?: string[];
   bank_name: string;
   account_name: string;
   account_no: string;
@@ -69,7 +69,7 @@ export type TradeData = {
   payment_method: string;
   valid_until: string;
   bank_profile_id: string;
-  bank: Omit<BankProfile, "id" | "name" | "currency" | "document_type">;
+  bank: Omit<BankProfile, "id" | "name" | "currency" | "legacy_ids">;
   bank_override: string;
   terms: string[];
   fee: string;
@@ -190,14 +190,8 @@ export function emptyGroup(id: string): PackingGroup {
     height: "",
   };
 }
-export function newTradeData(
-  settings: TradeSettings,
-  type: DocumentType,
-): TradeData {
-  const bank = settings.banks.find(
-    (b) =>
-      b.document_type === (type === "ci" ? "ci" : "pi") && b.currency === "USD",
-  );
+export function newTradeData(settings: TradeSettings): TradeData {
+  const bank = settings.banks.find((b) => b.currency === "USD");
   return {
     seller: { ...settings.seller },
     buyer: { name: "", address: "", contact: "", phone: "" },
@@ -395,30 +389,75 @@ export function normalizeSettings(value: unknown): TradeSettings {
   const v = record(value);
   if (!Array.isArray(v.banks) || v.banks.length > 60)
     throw new Error("银行配置最多 60 项");
-  const banks = v.banks.map((raw) => {
+  const candidates = v.banks.map((raw) => {
     const x = record(raw);
-    if (x.document_type !== "pi" && x.document_type !== "ci")
-      throw new Error("银行配置须选择 PI 或 CI");
     const currency = str(x.currency, "银行币种", 3).toUpperCase();
     if (!/^[A-Z]{3}$/.test(currency)) throw new Error("银行币种不正确");
-    return {
+    const bank: BankProfile = {
       id: str(x.id, "银行标识", 100),
       name: str(x.name, "银行配置名称", 120),
       currency,
-      document_type: x.document_type,
+      legacy_ids:
+        x.legacy_ids === undefined
+          ? []
+          : texts(x.legacy_ids, "旧银行标识", 60, 100),
       bank_name: str(x.bank_name, "银行名称", 250),
       account_name: str(x.account_name, "账户名称", 350),
       account_no: str(x.account_no, "账号", 100),
       swift: str(x.swift, "SWIFT/Code", 160),
       address: str(x.address, "银行地址", 500),
       remark: str(x.remark, "银行备注", 300),
-    } as BankProfile;
+    };
+    return {
+      bank,
+      legacy:
+        (x.document_type === "pi" || x.document_type === "ci") &&
+        bank.id === `${x.document_type}-${currency}`
+          ? x.document_type
+          : null,
+    };
   });
+  if (
+    candidates.some((x) => !x.bank.id) ||
+    new Set(candidates.map((x) => x.bank.id)).size !== candidates.length
+  )
+    throw new Error("银行配置标识重复");
+  // Original imports duplicated each currency. User confirmed PI as the shared source.
+  // Keep legacy IDs for reference checks, without rewriting any saved document snapshot.
+  const banks: BankProfile[] = [],
+    processed = new Set<string>();
+  for (const { bank, legacy } of candidates) {
+    if (!legacy) {
+      banks.push(bank);
+      continue;
+    }
+    if (processed.has(bank.currency)) continue;
+    processed.add(bank.currency);
+    const group = candidates.filter(
+      (x) => x.legacy && x.bank.currency === bank.currency,
+    );
+    if (new Set(group.map((x) => x.bank.account_no)).size > 1)
+      throw new Error(`${bank.currency} 的旧 PI/CI 账号不同，请先核对配置`);
+    const preferred = group.find((x) => x.legacy === "pi")?.bank ?? bank;
+    banks.push({
+      ...preferred,
+      id: `bank-${bank.currency}`,
+      name: `${bank.currency} 收款账户`,
+      legacy_ids: [
+        ...new Set(
+          group.flatMap((x) => [x.bank.id, ...(x.bank.legacy_ids ?? [])]),
+        ),
+      ],
+    });
+  }
   if (
     banks.some((b) => !b.id) ||
     new Set(banks.map((b) => b.id)).size !== banks.length
   )
     throw new Error("银行配置标识重复");
+  const identifiers = banks.flatMap((b) => [b.id, ...(b.legacy_ids ?? [])]);
+  if (new Set(identifiers).size !== identifiers.length)
+    throw new Error("银行配置旧标识重复");
   const currencies = texts(v.currencies, "币种", 30, 3).map((x) =>
     x.toUpperCase(),
   );

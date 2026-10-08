@@ -46,7 +46,6 @@ export function TradeSettingsEditor({
         {
           id,
           name: "新收款账户",
-          document_type: "pi",
           currency: "USD",
           ...EMPTY_BANK,
         },
@@ -124,7 +123,7 @@ export function TradeSettingsEditor({
         </FormSection>
         <FormSection
           title="币种与银行账户"
-          description="PI、CI 原表账户分别保留。请核对实际使用的账户与地址后出具单据。单据币种与订单收款币种独立。"
+          description="PI、CI 共用同一套按币种配置的银行账户。单据币种与订单收款币种独立。"
         >
           <label className={labelClassName}>
             可选币种（逗号分隔）
@@ -165,19 +164,6 @@ export function TradeSettingsEditor({
           </div>
           {bank && (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <label className={labelClassName}>
-                适用单据
-                <select
-                  className={inputClassName}
-                  value={bank.document_type}
-                  onChange={(e) =>
-                    updateBank("document_type", e.target.value as "pi" | "ci")
-                  }
-                >
-                  <option value="pi">PI</option>
-                  <option value="ci">CI</option>
-                </select>
-              </label>
               {(
                 [
                   ["name", "配置名称"],
@@ -193,6 +179,7 @@ export function TradeSettingsEditor({
                 <label key={key} className={labelClassName}>
                   {label}
                   <textarea
+                    aria-label={label}
                     className={textareaClassName}
                     rows={key === "address" || key === "account_name" ? 3 : 1}
                     value={bank[key]}

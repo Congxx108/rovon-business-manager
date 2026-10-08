@@ -524,9 +524,7 @@ export function TradeDocumentEditor({
                     onChange={(e) => {
                       const currency = e.target.value,
                         bank = settings.banks.find(
-                          (b) =>
-                            b.currency === currency &&
-                            b.document_type === (type === "ci" ? "ci" : "pi"),
+                          (b) => b.currency === currency,
                         );
                       selectBank(bank?.id ?? "", currency);
                     }}
@@ -845,7 +843,7 @@ export function TradeDocumentEditor({
           <>
             <FormSection
               title="收款账户"
-              description="按币种和 PI / CI 原表配置选择，允许本单编辑或手动覆盖。"
+              description="PI、CI 共用币种账户；已保存单据保留本单资料，可编辑或手动覆盖。"
             >
               <label className={`${labelClassName} max-w-md`}>
                 银行配置
@@ -856,6 +854,14 @@ export function TradeDocumentEditor({
                   onChange={(e) => selectBank(e.target.value)}
                 >
                   <option value="">本单手动填写</option>
+                  {data.bank_profile_id &&
+                    !settings.banks.some(
+                      (b) => b.id === data.bank_profile_id,
+                    ) && (
+                      <option value={data.bank_profile_id}>
+                        本单已保存账户（{data.currency}）
+                      </option>
+                    )}
                   {settings.banks
                     .filter((b) => b.currency === data.currency)
                     .map((b) => (

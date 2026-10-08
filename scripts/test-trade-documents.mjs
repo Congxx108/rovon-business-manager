@@ -38,7 +38,76 @@ for (const name of ["model", "pdf"]) {
 }
 const m = require(path.join(temp, "model.cjs")),
   { renderTradePdf } = require(path.join(temp, "pdf.cjs"));
-const data = m.newTradeData(m.DEFAULT_SETTINGS, "pi");
+const legacyBank = (type, currency, address) => ({
+  ...m.EMPTY_BANK,
+  id: `${type}-${currency}`,
+  name: `${type} legacy ${currency}`,
+  currency,
+  document_type: type,
+  account_no: `TEST-${currency}`,
+  address,
+});
+const legacySettings = {
+  ...m.DEFAULT_SETTINGS,
+  banks: [
+    legacyBank("ci", "USD", "TEST CI Address"),
+    legacyBank("pi", "USD", "TEST PI Address"),
+    legacyBank("pi", "CNY", "TEST Shared Address"),
+    legacyBank("ci", "CNY", "TEST Shared Address"),
+    {
+      ...m.EMPTY_BANK,
+      id: "other-usd",
+      name: "TEST Additional USD",
+      currency: "USD",
+      account_no: "TEST-OTHER",
+    },
+  ],
+};
+const sharedSettings = m.normalizeSettings(legacySettings);
+assert.equal(sharedSettings.banks.length, 3);
+assert.equal(sharedSettings.banks[0].id, "bank-USD");
+assert.equal(sharedSettings.banks[0].address, "TEST PI Address");
+assert.deepEqual(
+  new Set(sharedSettings.banks[0].legacy_ids),
+  new Set(["pi-USD", "ci-USD"]),
+);
+assert.ok(sharedSettings.banks.every((b) => !("document_type" in b)));
+assert.ok(sharedSettings.banks.some((b) => b.id === "other-usd"));
+assert.deepEqual(m.normalizeSettings(sharedSettings), sharedSettings);
+assert.throws(
+  () =>
+    m.normalizeSettings({
+      ...legacySettings,
+      banks: [...legacySettings.banks, legacySettings.banks[0]],
+    }),
+  /标识重复/,
+);
+assert.throws(
+  () =>
+    m.normalizeSettings({
+      ...legacySettings,
+      banks: legacySettings.banks.map((b) =>
+        b.id === "ci-USD" ? { ...b, account_no: "TEST-DIFFERENT" } : b,
+      ),
+    }),
+  /账号不同/,
+);
+const sharedPi = m.newTradeData(sharedSettings),
+  sharedCi = m.newTradeData(sharedSettings);
+assert.deepEqual(sharedPi.bank, sharedCi.bank);
+sharedPi.bank.address = "TEST Manual PI Address";
+assert.equal(sharedCi.bank.address, "TEST PI Address");
+assert.equal(sharedSettings.banks[0].address, "TEST PI Address");
+const legacySnapshot = m.normalizeTradeData({
+  ...sharedCi,
+  bank_profile_id: "ci-USD",
+  bank: { ...sharedCi.bank, address: "TEST Saved CI Address" },
+  bank_override: "TEST Manual Override",
+});
+assert.equal(legacySnapshot.bank_profile_id, "ci-USD");
+assert.equal(legacySnapshot.bank.address, "TEST Saved CI Address");
+assert.equal(legacySnapshot.bank_override, "TEST Manual Override");
+const data = m.newTradeData(m.DEFAULT_SETTINGS);
 data.buyer.name = "TEST Buyer";
 data.buyer.address = "TEST Address, Nigeria";
 data.items[0] = {
@@ -241,6 +310,6 @@ const longBytes = await renderTradePdf(longDoc, async () => new Uint8Array());
 assert.ok((await PDFDocument.load(longBytes)).getPageCount() >= 4);
 await fs.writeFile(path.join(temp, "ci-multiple-pages.pdf"), longBytes);
 console.log(
-  "PASS: decimal rounding, input boundaries, mixed cartons, optional orders, numbering, optimistic concurrency, immutable versions, restricted access, business-data isolation, PDF orientation and continuation.",
+  "PASS: shared currency banks, legacy consolidation and snapshot preservation, decimal rounding, input boundaries, mixed cartons, optional orders, numbering, optimistic concurrency, immutable versions, restricted access, business-data isolation, PDF orientation and continuation.",
 );
 console.log("QA PDFs:", temp);
