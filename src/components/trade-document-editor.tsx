@@ -501,7 +501,9 @@ export function TradeDocumentEditor({
           ))}
         </div>
         <FormSection title="交易与运输">
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            className={`grid gap-2 sm:grid-cols-2 ${type === "packing" ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}
+          >
             <SelectField
               label="贸易条款"
               options={TRADE_SELECT_OPTIONS.incoterms}
