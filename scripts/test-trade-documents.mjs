@@ -128,7 +128,7 @@ await db.exec(
 const migration = await fs.readFile(
   path.join(
     root,
-    "supabase/migrations/20261008025706_optional_trade_documents.sql",
+    "supabase/migrations/20261008033128_optional_trade_documents.sql",
   ),
   "utf8",
 );

@@ -39,7 +39,7 @@
 
 执行 `npm run lint`、`npx tsc --noEmit`、`npm run test:trade-documents`、`npm run build`。专用测试使用临时 PGlite 数据库，覆盖可选订单、编号竞争、金额舍入、混箱、冲突、历史快照和权限；合成 PDF 输出到系统临时目录。
 
-迁移文件：`supabase/migrations/20261008025706_optional_trade_documents.sql`。生产迁移已执行，账号另行私有初始化；新环境先迁移，再通过受保护设置页填写公司/账户。Vercel 部署不会自动运行 Supabase migration。
+迁移文件：`supabase/migrations/20261008033128_optional_trade_documents.sql`。生产迁移已执行，账号另行私有初始化；新环境先迁移，再通过受保护设置页填写公司/账户。Vercel 部署不会自动运行 Supabase migration。
 
 模板资源见 `assets/trade-documents/README.md`。修改模板需重新清除动态样本资料，校准 PDF 网格并渲染比对，不能将带真实客户/账号的 XLSX 或参考 PDF 提交。Next.js 文件追踪显式包含模板和字体，以保证部署环境可以生成 PDF。
 
@@ -51,3 +51,6 @@
 - 实际浏览器验证：无订单 PI、图片上传、预览、出具两版、旧 PDF 哈希不变、旧窗口保存冲突、复制 CI、无 PI 的混箱装箱单、作废、设置冲突、登录和同源限制。
 - 已查看桌面/手机页面，以及三类 PDF 的渲染结果；中文“女包/书包”完整显示，普通内容均为一页，多页明细与超长文字附页单独验证。
 - 测试使用临时账号和明确标记的合成单据；不会新增真实订单、客户或潜客记录。
+- 功能提交 `b965e43` 已完成 Vercel 生产部署，并在[正式站点](https://rovon-business-manager.vercel.app/trade-documents)完成上述流程验收；PI、CI、装箱单均在线成功出具并下载 PDF。
+- 临时账号、测试单据、历史版本和文件已全部清理。最终审计：测试单据/版本/文件均为 0，原三张业务表的记录数和内容指纹保持一致，20 个原表银行配置已保留。
+- 本地迁移时间戳与 Supabase 实际登记版本 `20261008033128` 对齐，后续 CLI 迁移不会重复执行本次新增表。
