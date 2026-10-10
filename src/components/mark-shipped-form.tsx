@@ -14,6 +14,7 @@ type MarkShippedFormProps = {
   orderId: string;
   initialShipping: Pick<Order, "shipping_method" | "shipping_company" | "tracking_no" | "shipping_date" | "shipping_remark">;
   returnTo?: string;
+  triggerClassName?: string;
   orderNo?: string | null;
   customerName?: string | null;
   country?: string | null;
@@ -25,6 +26,7 @@ export function MarkShippedForm({
   orderId,
   initialShipping,
   returnTo = "/orders?pendingShipping=1",
+  triggerClassName = "",
   orderNo,
   customerName,
   country,
@@ -51,7 +53,7 @@ export function MarkShippedForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-8 items-center rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100 active:translate-y-px"
+        className={`inline-flex h-8 items-center rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100 active:translate-y-px ${triggerClassName}`}
       >
         标记已发货
       </button>

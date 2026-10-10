@@ -3,7 +3,7 @@ import { CsvExportButton } from "@/components/csv-export-button";
 import { MarkShippedForm } from "@/components/mark-shipped-form";
 import { PageHeader } from "@/components/page-header";
 import { StatusNote } from "@/components/status-note";
-import { Badge, Button, FilterBar, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
+import { Badge, Button, FilterBar, inputClassName, labelClassName, tableHeadClassName, tableShellClassName } from "@/components/ui";
 import { ShippingStatusBadge } from "@/components/shipping-status-badge";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 import { getOrderFilterOptions, getOrders } from "@/lib/data";
@@ -69,7 +69,7 @@ export default async function OrdersPage({
   };
 
   return (
-    <AppShell>
+    <AppShell wide>
       <PageHeader
         title="订单管理"
         description="记录已验证的核心订单字段，销售统计会自动排除取消/退款订单。"
@@ -103,19 +103,19 @@ export default async function OrdersPage({
       </form>
       </FilterBar>
 
-      <div className={tableShellClassName}>
-        <table className="business-table w-full min-w-[1988px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+      <div className={`${tableShellClassName} order-list-shell`}>
+        <table className="business-table order-list-table w-full table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
-            <col className="w-[220px]" />
+            <col className="order-list-action-col" />
             <col className="w-[104px]" />
-            <col className="w-[128px]" />
+            <col className="w-[208px]" />
             <col className="w-[160px]" />
             <col className="w-[152px]" />
             <col className="w-[96px]" />
             <col className="w-[80px]" />
             <col className="w-[72px]" />
             <col className="w-[120px]" />
-            <col className="w-[128px]" />
+            <col className="w-[160px]" />
             <col className="w-[96px]" />
             <col className="w-[144px]" />
             <col className="w-[96px]" />
@@ -148,14 +148,15 @@ export default async function OrdersPage({
               result.data.map((order) => {
                 const isRepeatOrder = repeatOrderIds.has(order.id);
                 return (
-                <tr key={order.id} className={orderRowClassName(order, isRepeatOrder)}>
-                  <td className={stickyActionCellClassName(order, isRepeatOrder)}>
-                    <div className="flex flex-wrap gap-2">
+                <tr key={order.id} className={orderRowClassName(order)}>
+                  <td className={stickyActionCellClassName}>
+                    <div className="order-list-actions">
                       <Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button>
                       <Button href={`/trade-documents?order=${order.id}`} variant="ghost" className="h-8 px-3">单据（可选）</Button>
                       {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
                         <MarkShippedForm
                           orderId={order.id}
+                          triggerClassName="order-list-shipping-trigger"
                           initialShipping={{
                             shipping_method: order.shipping_method,
                             shipping_company: order.shipping_company,
@@ -185,7 +186,9 @@ export default async function OrdersPage({
                   <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatNumber(order.quantity)}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb))}</td>
-                  <td className="px-4 py-3"><div className="whitespace-normal break-words">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0), order.payment_currency)}</div></td>
+                  <td className="px-4 py-3">
+                    <PaymentSummary status={order.payment_status} depositAmount={Number(order.deposit_amount_rmb ?? 0)} currency={order.payment_currency} />
+                  </td>
                   <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
                   <td className="px-4 py-3"><ShippingTimingBadge order={order} /></td>
                   <td className="truncate px-4 py-3" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
@@ -260,9 +263,14 @@ function FilterSelect({
   );
 }
 
-function formatPaymentStatus(paymentStatus: string, depositAmount: number, paymentCurrency?: string | null) {
-  const status = paymentStatus === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
-  return paymentCurrency ? `${status} / ${paymentCurrency}` : status;
+function PaymentSummary({ status, depositAmount, currency }: { status: string; depositAmount: number; currency?: string | null }) {
+  const label = status === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
+  return (
+    <div className="order-list-payment" title={currency ? `${label} / ${currency}` : label}>
+      <div>{label}</div>
+      <div className="text-slate-500">{currency || "\u00a0"}</div>
+    </div>
+  );
 }
 
 function ShippingTimingBadge({ order }: { order: { shipping_status: string; shipping_date: string | null; order_date: string | null } }) {
@@ -312,15 +320,11 @@ function dateFromYmd(date: string) {
 const stickyActionHeaderClassName =
   "sticky left-0 z-10 border-r border-slate-200 bg-slate-50/95 px-4 py-3 font-medium shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)]";
 
-function stickyActionCellClassName(order: { is_refund_or_cancelled: boolean }, isRepeatOrder: boolean) {
-  const background = order.is_refund_or_cancelled ? "bg-rose-50" : isRepeatOrder ? "bg-blue-50" : "bg-white";
-  return `sticky left-0 z-[1] border-r border-slate-100 px-4 py-3 shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)] transition-colors ${background}`;
-}
+const stickyActionCellClassName =
+  "sticky left-0 z-[1] border-r border-slate-100 px-4 py-3 shadow-[8px_0_16px_-18px_rgba(15,23,42,0.45)]";
 
-function orderRowClassName(order: { is_refund_or_cancelled: boolean }, isRepeatOrder: boolean) {
-  if (order.is_refund_or_cancelled) return "border-b border-slate-100 bg-rose-50/70 align-middle transition-colors hover:bg-rose-50";
-  if (isRepeatOrder) return "border-b border-slate-100 bg-blue-50/45 align-middle transition-colors hover:bg-blue-50/70";
-  return tableRowClassName;
+function orderRowClassName(order: { is_refund_or_cancelled: boolean }) {
+  return `order-list-row border-b border-slate-100 align-middle${order.is_refund_or_cancelled ? " order-list-cancelled" : ""}`;
 }
 
 function buildRepeatOrderIds(orders: Array<{

@@ -267,6 +267,89 @@ body {
   padding-inline: 12px;
 }
 
+/* Orders alone use uniform rows, opaque sticky cells and content-width adaptation. */
+.order-list-shell {
+  container: order-list / inline-size;
+}
+
+.order-list-table {
+  --order-action-width: 320px;
+  min-width: calc(1880px + var(--order-action-width));
+}
+
+.order-list-action-col {
+  width: var(--order-action-width);
+}
+
+.order-list-table th {
+  height: 60px;
+  vertical-align: middle;
+}
+
+.order-list-row {
+  --order-row-background: #fff;
+  height: 68px;
+}
+
+.order-list-row:hover {
+  --order-row-background: #f8fafc;
+}
+
+.order-list-cancelled {
+  --order-row-background: #fff5f6;
+}
+
+.order-list-cancelled:hover {
+  --order-row-background: #fff1f2;
+}
+
+.order-list-row > td {
+  background-color: var(--order-row-background);
+  vertical-align: middle;
+  transition: background-color 150ms;
+}
+
+.order-list-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-list-actions > a,
+.order-list-actions > button {
+  height: 40px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.order-list-payment {
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+@container order-list (max-width: 30rem) {
+  .order-list-table {
+    --order-action-width: 220px;
+  }
+
+  .order-list-row {
+    height: 114px;
+  }
+
+  .order-list-actions {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    align-content: start;
+    min-height: 88px;
+  }
+
+  .order-list-shipping-trigger {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
