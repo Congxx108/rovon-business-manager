@@ -347,12 +347,14 @@ export function PaymentFields({
   defaultPaymentCurrency = "",
   defaultRmbPaymentMethod = "",
   defaultPaymentRemark = "",
+  children,
 }: {
   defaultPaymentStatus?: string | null;
   defaultDepositAmount?: number | null;
   defaultPaymentCurrency?: string | null;
   defaultRmbPaymentMethod?: string | null;
   defaultPaymentRemark?: string | null;
+  children?: React.ReactNode;
 }) {
   const normalizedStatus = defaultPaymentStatus === "定金" ? "定金" : "已付全款";
   const [paymentStatus, setPaymentStatus] = useState(normalizedStatus);
@@ -433,7 +435,8 @@ export function PaymentFields({
       ) : (
         <input type="hidden" name="rmb_payment_method" value="" />
       )}
-      <label className={`${labelClassName} md:col-span-2 xl:col-span-3`}>
+      {children}
+      <label className={`${labelClassName} business-field-full`}>
         付款备注
         <textarea name="payment_remark" defaultValue={defaultPaymentRemark ?? ""} rows={2} className={textareaClassName} />
       </label>

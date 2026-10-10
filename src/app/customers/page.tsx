@@ -88,16 +88,16 @@ export default async function CustomersPage({
           <p className="mt-1 text-sm text-slate-500">展示最近5天内有跟进记录的客户，方便回顾什么时候跟进了谁、跟进状态和内容。</p>
         </div>
         {recentFollowResult.data.length ? <div className={`mt-3 ${tableShellClassName}`}>
-          <table className="w-full min-w-[980px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+          <table className="business-table w-full min-w-[1196px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
             <colgroup>
-              <col className="w-[100px]" />
+              <col className="w-[104px]" />
               <col className="w-[170px]" />
               <col className="w-[150px]" />
               <col className="w-[100px]" />
               <col className="w-[130px]" />
               <col className="w-[240px]" />
               <col className="w-[110px]" />
-              <col className="w-[180px]" />
+              <col className="w-[192px]" />
             </colgroup>
             <thead className={tableHeadClassName}>
               <tr>
@@ -136,22 +136,22 @@ export default async function CustomersPage({
       </section>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1780px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="business-table w-full min-w-[1756px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
-            <col className="w-[180px]" />
+            <col className="w-[192px]" />
             <col className="w-[180px]" />
             <col className="w-[160px]" />
             <col className="w-[100px]" />
-            <col className="w-[90px]" />
-            <col className="w-[110px]" />
-            <col className="w-[90px]" />
-            <col className="w-[110px]" />
-            <col className="w-[120px]" />
-            <col className="w-[90px]" />
+            <col className="w-[104px]" />
+            <col className="w-[112px]" />
+            <col className="w-[88px]" />
+            <col className="w-[108px]" />
+            <col className="w-[124px]" />
+            <col className="w-[96px]" />
             <col className="w-[100px]" />
-            <col className="w-[110px]" />
-            <col className="w-[110px]" />
-            <col className="w-[190px]" />
+            <col className="w-[104px]" />
+            <col className="w-[104px]" />
+            <col className="w-[184px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
@@ -160,13 +160,13 @@ export default async function CustomersPage({
               <th className="px-4 py-3 font-medium">联系方式</th>
               <th className="px-4 py-3 font-medium">国家/渠道</th>
               <th className="px-4 py-3 font-medium">首单日期</th>
-              <th className="px-4 py-3 font-medium">最近下单日期</th>
-              <th className="px-4 py-3 text-right font-medium">历史订单数</th>
-              <th className="px-4 py-3 text-right font-medium">历史购买总数量</th>
-              <th className="px-4 py-3 text-right font-medium">历史销售额RMB</th>
+              <th className="px-4 py-3 font-medium">最近下单<br />日期</th>
+              <th className="px-4 py-3 text-right font-medium">历史<br />订单数</th>
+              <th className="px-4 py-3 text-right font-medium">历史购买<br />总数量</th>
+              <th className="px-4 py-3 text-right font-medium">历史销售额<br />RMB</th>
               <th className="px-4 py-3 font-medium">复购状态</th>
-              <th className="px-4 py-3 font-medium">客户价值等级</th>
-              <th className="px-4 py-3 font-medium">客户复购潜力</th>
+              <th className="px-4 py-3 font-medium">客户价值<br />等级</th>
+              <th className="px-4 py-3 font-medium">客户复购<br />潜力</th>
               <th className="px-4 py-3 font-medium">跟进优先级</th>
               <th className="px-4 py-3 font-medium">建议跟进动作</th>
             </tr>
@@ -211,7 +211,7 @@ export default async function CustomersPage({
 
 function CustomerActions({ id }: { id: string }) {
   return (
-    <div className="flex min-w-[150px] gap-2">
+    <div className="flex gap-2">
       <Button href={`/customers/${id}`} variant="secondary" className="h-8 px-3">详情</Button>
       <Button href={`/customers/${id}/edit`} variant="secondary" className="h-8 px-3">跟进/编辑</Button>
     </div>

@@ -29,8 +29,11 @@ export default async function EditOrderPage({
 
   return (
     <AppShell>
-      <PageHeader title="编辑订单" description="修改订单后会自动刷新客户统计。删除订单暂不做物理删除，请使用取消/退款标记。" />
-      <div className="mb-5"><Button href={`/trade-documents?order=${order.id}`} variant="secondary">查看 / 制作单据（可选）</Button></div>
+      <PageHeader
+        title="编辑订单"
+        description="修改订单后会自动刷新客户统计。删除订单暂不做物理删除，请使用取消/退款标记。"
+        actions={<Button href={`/trade-documents?order=${order.id}`} variant="secondary">查看 / 制作单据（可选）</Button>}
+      />
 
       {error ? <Message tone="error" text={error} /> : null}
       {orderItemsResult.error ? <Message tone="error" text={`订单明细读取失败：${orderItemsResult.error}`} /> : null}
@@ -42,9 +45,9 @@ export default async function EditOrderPage({
         />
       ) : null}
 
-      <form action={saveAction} className="max-w-none space-y-5">
+      <form action={saveAction} className="business-form space-y-4">
         <FormSection title="基础信息">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="business-field-grid order-basic-grid">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={order.order_date} />
             <FormField label="订单编号" name="order_no" required defaultValue={order.order_no} />
             <CustomerAutocompleteFields defaultCustomerName={order.customer_name} defaultContact={order.contact} defaultCountry={order.country} />
@@ -56,23 +59,24 @@ export default async function EditOrderPage({
         </FormSection>
 
         <FormSection title="付款状态" description="付款和取消/退款信息会保留记录；取消/退款订单不计入销售、数量和客户统计。">
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="business-field-grid order-payment-grid">
             <PaymentFields
               defaultPaymentStatus={order.payment_status}
               defaultDepositAmount={order.deposit_amount_rmb}
               defaultPaymentCurrency={order.payment_currency}
               defaultRmbPaymentMethod={order.rmb_payment_method}
               defaultPaymentRemark={order.payment_remark}
-            />
-            <label className="flex h-10 items-center gap-2 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
-              <input
-                name="is_refund_or_cancelled"
-                type="checkbox"
-                defaultChecked={order.is_refund_or_cancelled}
-                className="h-4 w-4 rounded border-slate-300"
-              />
-              是否取消/退款
-            </label>
+            >
+              <label className="flex h-10 items-center gap-2 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
+                <input
+                  name="is_refund_or_cancelled"
+                  type="checkbox"
+                  defaultChecked={order.is_refund_or_cancelled}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                是否取消/退款
+              </label>
+            </PaymentFields>
           </div>
         </FormSection>
 
@@ -84,7 +88,7 @@ export default async function EditOrderPage({
         </FormSection>
 
         <FormSection title="发货信息" description="这里是避免重复发货和漏发货的关键字段。已发货但信息不完整时仍可保存，系统会给出提醒。">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="business-field-grid">
             <SelectField label="发货状态" name="shipping_status" defaultValue={order.shipping_status ?? "未发货"} options={SHIPPING_STATUSES} />
             <SelectField label="物流方式" name="shipping_method" defaultValue={order.shipping_method ?? ""} options={SHIPPING_METHODS} emptyLabel="未填写" />
             <FormField label="物流/快运公司" name="shipping_company" defaultValue={order.shipping_company ?? ""} />

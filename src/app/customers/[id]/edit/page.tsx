@@ -35,11 +35,11 @@ export default async function EditCustomerPage({
       {error ? <Message tone="error" text={error} /> : null}
       {saved ? <Message tone="success" text="客户信息已保存。" /> : null}
 
-      <form action={saveAction} className="space-y-5">
-        <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+      <form action={saveAction} className="business-form space-y-4">
+        <section className="rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/70">
           <h2 className="text-base font-semibold tracking-tight">客户基础信息与统计</h2>
           <p className="mt-1 text-sm text-slate-500">客户名和国家/渠道可人工修正；联系方式和订单统计保持只读，避免改乱历史订单数据。</p>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="customer-identity-grid mt-3">
             <label className={labelClassName}>
               客户名<span className="ml-1 text-rose-600">*</span>
               <input name="name" required defaultValue={customer.name} className={inputClassName} />
@@ -56,6 +56,8 @@ export default async function EditCustomerPage({
                 ))}
               </select>
             </label>
+          </div>
+          <div className="customer-stat-grid mt-3 border-t border-slate-100 pt-3">
             <ReadOnly label="首单日期" value={formatDate(customer.first_order_date)} />
             <ReadOnly label="最近下单日期" value={formatDate(customer.last_order_date)} />
             <ReadOnly label="历史订单数" value={formatNumber(customer.total_orders)} />
@@ -69,9 +71,8 @@ export default async function EditCustomerPage({
           </div>
         </section>
 
-        <div className="max-w-3xl space-y-5">
         <FormSection title="人工跟进字段" description="这里只维护跟进记录，不影响订单汇总出来的客户统计。">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="business-field-grid">
             <FormField label="最后跟进日期" name="last_follow_date" type="date" defaultValue={customer.last_follow_date ?? ""} />
             <label className={labelClassName}>
               最后跟进结果
@@ -90,14 +91,13 @@ export default async function EditCustomerPage({
             </label>
             <FormField label="下次联系日期" name="next_follow_date" type="date" defaultValue={customer.next_follow_date ?? ""} />
           </div>
-          <div className="mt-4">
+          <div className="mt-3">
             <FormField label="备注" name="remark" textarea defaultValue={customer.remark ?? ""} />
           </div>
         </FormSection>
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-4 flex flex-wrap justify-end gap-3">
           <Button href="/customers" variant="secondary">返回客户列表</Button>
           <Button type="submit">保存跟进信息</Button>
-        </div>
         </div>
       </form>
     </AppShell>
@@ -106,9 +106,9 @@ export default async function EditCustomerPage({
 
 function ReadOnly({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
       <div className="text-xs text-slate-500">{label}</div>
-      <div className="mt-1 text-sm font-medium text-slate-900">{value}</div>
+      <div className="mt-1 break-words text-sm font-medium text-slate-900">{value}</div>
     </div>
   );
 }

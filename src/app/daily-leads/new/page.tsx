@@ -66,15 +66,15 @@ export default async function NewDailyLeadPage({
         </div>
       ) : null}
 
-      <form action={createDailyLead} className="max-w-3xl space-y-5">
+      <form action={createDailyLead} className="business-form space-y-4">
         <FormSection title="当天累计数" description="这里只填写累计人数；三个增加数字段保存后自动计算，不需要手工填写。">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="daily-stat-grid">
             <FormField label="日期" name="stat_date" type="date" required defaultValue={todayString()} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required defaultValue={0} min={0} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required defaultValue={0} min={0} />
             <FormField label="WhatsApp3" name="whatsapp3" type="number" required defaultValue={0} min={0} />
             <FormField label="WhatsApp4" name="whatsapp4" type="number" required defaultValue={0} min={0} />
-            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required defaultValue={0} min={0} />
+            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required defaultValue={0} min={0} className="daily-facebook-field" />
             <FormField label="女包群" name="handbag_group" type="number" required defaultValue={0} min={0} />
             <FormField label="双肩包群" name="backpack_group" type="number" required defaultValue={0} min={0} />
           </div>

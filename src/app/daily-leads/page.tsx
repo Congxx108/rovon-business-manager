@@ -70,46 +70,46 @@ export default async function DailyLeadsPage({
       {params.updated ? <Message tone="success" text="更新成功，该日期数据已刷新。" /> : null}
       {params.exists ? <ExistingDateNotice params={params} /> : null}
 
-      <details className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70" open>
+      <details className="daily-entry-panel mb-4 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/70" open>
         <summary className="cursor-pointer text-base font-semibold text-slate-950 transition hover:text-blue-700">展开/收起快速录入今日统计</summary>
         <p className="mt-2 text-sm text-slate-500">
           正常情况下只填累计数；总潜客增加、女包群增加数、双肩包群增加数会由系统自动计算。
         </p>
         <form action={quickCreateDailyLead} className="mt-4">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="daily-stat-grid">
             <FormField label="日期" name="stat_date" type="date" required defaultValue={params.stat_date ?? todayString()} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={params.whatsapp1 ?? 0} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={params.whatsapp2 ?? 0} />
             <FormField label="WhatsApp3" name="whatsapp3" type="number" required min={0} defaultValue={params.whatsapp3 ?? 0} />
             <FormField label="WhatsApp4" name="whatsapp4" type="number" required min={0} defaultValue={params.whatsapp4 ?? 0} />
-            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={params.facebook_leads ?? 0} />
+            <FormField label="Facebook后台潜在客户" name="facebook_leads" type="number" required min={0} defaultValue={params.facebook_leads ?? 0} className="daily-facebook-field" />
             <FormField label="女包群" name="handbag_group" type="number" required min={0} defaultValue={params.handbag_group ?? 0} />
             <FormField label="双肩包群" name="backpack_group" type="number" required min={0} defaultValue={params.backpack_group ?? 0} />
-          </div>
-          <div className="mt-5 flex justify-end">
-            <Button type="submit">保存今日统计</Button>
+            <div className="business-form-actions">
+              <Button type="submit">保存今日统计</Button>
+            </div>
           </div>
         </form>
       </details>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1850px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="business-table w-full min-w-[1564px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
-            <col className="w-[100px]" />
-            <col className="w-[110px]" />
-            <col className="w-[110px]" />
-            <col className="w-[110px]" />
-            <col className="w-[110px]" />
-            <col className="w-[120px]" />
-            <col className="w-[180px]" />
-            <col className="w-[100px]" />
-            <col className="w-[100px]" />
-            <col className="w-[110px]" />
-            <col className="w-[130px]" />
-            <col className="w-[110px]" />
-            <col className="w-[150px]" />
+            <col className="w-[104px]" />
+            <col className="w-[96px]" />
+            <col className="w-[96px]" />
+            <col className="w-[96px]" />
+            <col className="w-[96px]" />
+            <col className="w-[112px]" />
+            <col className="w-[136px]" />
+            <col className="w-[88px]" />
+            <col className="w-[80px]" />
+            <col className="w-[88px]" />
+            <col className="w-[112px]" />
+            <col className="w-[104px]" />
+            <col className="w-[128px]" />
             <col className="w-[140px]" />
-            <col className="w-[90px]" />
+            <col className="w-[88px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
@@ -119,13 +119,13 @@ export default async function DailyLeadsPage({
               <th className="px-4 py-3 text-right font-medium">WhatsApp3</th>
               <th className="px-4 py-3 text-right font-medium">WhatsApp4</th>
               <th className="px-4 py-3 text-right font-medium">总潜客增加</th>
-              <th className="px-4 py-3 text-right font-medium">Facebook后台潜在客户</th>
+              <th className="px-4 py-3 text-right font-medium">Facebook后台<br />潜在客户</th>
               <th className="px-4 py-3 text-right font-medium">FB增加</th>
               <th className="px-4 py-3 text-right font-medium">FB占比</th>
               <th className="px-4 py-3 text-right font-medium">女包群</th>
-              <th className="px-4 py-3 text-right font-medium">增加数-女包群</th>
+              <th className="px-4 py-3 text-right font-medium">增加数-<br />女包群</th>
               <th className="px-4 py-3 text-right font-medium">双肩包群</th>
-              <th className="px-4 py-3 text-right font-medium">增加数-双肩包群</th>
+              <th className="px-4 py-3 text-right font-medium">增加数-<br />双肩包群</th>
               <th className="px-4 py-3 font-medium">标记</th>
               <th className="px-4 py-3 font-medium">操作</th>
             </tr>

@@ -62,7 +62,7 @@ export function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className={sectionCardClassName}>
+    <section className={`form-section ${sectionCardClassName}`}>
       <div className="mb-4 border-b border-slate-100 pb-4">
         <h2 className="text-[15px] font-semibold tracking-tight text-slate-950">{title}</h2>
         {description ? <p className="mt-1.5 text-sm leading-6 text-slate-500">{description}</p> : null}

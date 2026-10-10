@@ -104,24 +104,24 @@ export default async function OrdersPage({
       </FilterBar>
 
       <div className={tableShellClassName}>
-        <table className="w-full min-w-[1830px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table className="business-table w-full min-w-[1988px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
-            <col className="w-[180px]" />
-            <col className="w-[90px]" />
-            <col className="w-[130px]" />
+            <col className="w-[220px]" />
+            <col className="w-[104px]" />
+            <col className="w-[128px]" />
             <col className="w-[160px]" />
-            <col className="w-[160px]" />
-            <col className="w-[100px]" />
+            <col className="w-[152px]" />
+            <col className="w-[96px]" />
             <col className="w-[80px]" />
-            <col className="w-[80px]" />
-            <col className="w-[110px]" />
-            <col className="w-[90px]" />
-            <col className="w-[90px]" />
-            <col className="w-[130px]" />
-            <col className="w-[90px]" />
+            <col className="w-[72px]" />
             <col className="w-[120px]" />
-            <col className="w-[140px]" />
-            <col className="w-[150px]" />
+            <col className="w-[128px]" />
+            <col className="w-[96px]" />
+            <col className="w-[144px]" />
+            <col className="w-[96px]" />
+            <col className="w-[112px]" />
+            <col className="w-[144px]" />
+            <col className="w-[136px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
@@ -136,10 +136,10 @@ export default async function OrdersPage({
               <th className="px-4 py-3 text-right font-medium">销售额RMB</th>
               <th className="px-4 py-3 font-medium">付款状态</th>
               <th className="px-4 py-3 font-medium">发货状态</th>
-              <th className="px-4 py-3 font-medium">发货日期 / 待发货</th>
+              <th className="px-4 py-3 font-medium">发货日期 / <br />待发货</th>
               <th className="px-4 py-3 font-medium">物流方式</th>
               <th className="px-4 py-3 font-medium">物流/快运公司</th>
-              <th className="px-4 py-3 font-medium">物流单号/货运单号</th>
+              <th className="px-4 py-3 font-medium">物流单号/<br />货运单号</th>
               <th className="px-4 py-3 font-medium">取消/退款</th>
             </tr>
           </thead>
@@ -150,7 +150,7 @@ export default async function OrdersPage({
                 return (
                 <tr key={order.id} className={orderRowClassName(order, isRepeatOrder)}>
                   <td className={stickyActionCellClassName(order, isRepeatOrder)}>
-                    <div className="flex min-w-[150px] flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button href={`/orders/${order.id}/edit`} variant="secondary" className="h-8 px-3">编辑</Button>
                       <Button href={`/trade-documents?order=${order.id}`} variant="ghost" className="h-8 px-3">单据（可选）</Button>
                       {!order.is_refund_or_cancelled && isPendingShippingStatus(order.shipping_status) ? (
@@ -185,7 +185,7 @@ export default async function OrdersPage({
                   <td className="truncate px-4 py-3" title={order.product_line ?? ""}>{order.product_line ?? "-"}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatNumber(order.quantity)}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatRmb(Number(order.sales_amount_rmb))}</td>
-                  <td className="px-4 py-3">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0), order.payment_currency)}</td>
+                  <td className="px-4 py-3"><div className="whitespace-normal break-words">{formatPaymentStatus(order.payment_status, Number(order.deposit_amount_rmb ?? 0), order.payment_currency)}</div></td>
                   <td className="px-4 py-3"><ShippingStatusBadge value={order.shipping_status} /></td>
                   <td className="px-4 py-3"><ShippingTimingBadge order={order} /></td>
                   <td className="truncate px-4 py-3" title={order.shipping_method ?? ""}>{order.shipping_method ?? "-"}</td>
@@ -193,7 +193,7 @@ export default async function OrdersPage({
                   <td className="truncate px-4 py-3" title={order.tracking_no ?? ""}>{order.tracking_no ?? "-"}</td>
                   <td className="px-4 py-3">
                     {order.is_refund_or_cancelled ? (
-                      <Badge tone="danger">取消/退款，不计入统计</Badge>
+                      <Badge tone="danger"><span className="leading-4">取消/退款，<br />不计入统计</span></Badge>
                     ) : (
                       "否"
                     )}

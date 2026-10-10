@@ -171,6 +171,102 @@ body {
   }
 }
 
+/* Business forms use their available content width, including beside the sidebar. */
+.business-form {
+  container: business-form / inline-size;
+}
+
+.daily-entry-panel {
+  container: business-form / inline-size;
+}
+
+.business-form .form-section {
+  padding: 16px;
+}
+
+.business-form .form-section > :first-child {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+}
+
+.business-field-grid,
+.customer-identity-grid,
+.customer-stat-grid,
+.daily-stat-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.business-field-grid > *,
+.business-field-grid > .contents > *,
+.customer-identity-grid > *,
+.daily-stat-grid > * {
+  min-width: 0;
+}
+
+.business-field-full,
+.daily-stat-grid > .business-form-actions {
+  grid-column: 1 / -1;
+}
+
+.business-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-self: end;
+  gap: 12px;
+}
+
+@container business-form (min-width: 30rem) {
+  .business-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customer-identity-grid,
+  .customer-stat-grid,
+  .daily-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .daily-stat-grid > .business-form-actions {
+    grid-column: auto;
+  }
+}
+
+@container business-form (min-width: 48rem) {
+  .business-field-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container business-form (min-width: 52rem) {
+  .daily-stat-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .daily-facebook-field {
+    grid-column: span 2;
+  }
+}
+
+@container business-form (min-width: 60rem) {
+  .order-basic-grid {
+    grid-template-columns: 0.9fr 0.9fr 1.1fr 1.3fr 0.9fr;
+  }
+
+  .customer-stat-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Keep table type sizes while making horizontal padding and headers more useful. */
+.business-table th,
+.business-table td {
+  padding-inline: 12px;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;

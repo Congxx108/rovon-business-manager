@@ -35,9 +35,9 @@ export default async function NewOrderPage({
         </div>
       ) : null}
 
-      <form action={createOrder} className="max-w-none space-y-5">
+      <form action={createOrder} className="business-form space-y-4">
         <FormSection title="基础信息" description="客户名和联系方式至少填写一个，方便后续客户统计和跟进。">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="business-field-grid order-basic-grid">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={todayString()} />
             <FormField label="订单编号" name="order_no" placeholder="不填则自动生成" />
             <CustomerAutocompleteFields />
@@ -49,12 +49,13 @@ export default async function NewOrderPage({
         </FormSection>
 
         <FormSection title="付款状态" description="付款和取消/退款信息会保留记录；取消/退款订单不计入销售、数量和客户统计。">
-          <div className="grid gap-3 md:grid-cols-3">
-            <PaymentFields />
-            <label className="flex h-10 items-center gap-2 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
-              <input name="is_refund_or_cancelled" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
-              是否取消/退款
-            </label>
+          <div className="business-field-grid order-payment-grid">
+            <PaymentFields>
+              <label className="flex h-10 items-center gap-2 self-end rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700">
+                <input name="is_refund_or_cancelled" type="checkbox" className="h-4 w-4 rounded border-slate-300" />
+                是否取消/退款
+              </label>
+            </PaymentFields>
           </div>
         </FormSection>
 

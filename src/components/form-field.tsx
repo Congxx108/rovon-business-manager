@@ -11,6 +11,7 @@ type FormFieldProps = {
   step?: string | number;
   textarea?: boolean;
   rows?: number;
+  className?: string;
 };
 
 export function FormField({
@@ -24,9 +25,10 @@ export function FormField({
   step,
   textarea,
   rows,
+  className = "",
 }: FormFieldProps) {
   return (
-    <label className={labelClassName}>
+    <label className={`${labelClassName} ${className}`}>
       <span>
         {label}
         {required ? <span className="ml-1 text-rose-600">*</span> : null}
