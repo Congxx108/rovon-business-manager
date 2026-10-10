@@ -2,9 +2,10 @@ import { AppShell } from "@/components/app-shell";
 import { FormField } from "@/components/form-field";
 import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/components/order-form-controls";
 import { PageHeader } from "@/components/page-header";
-import { Button, FormSection, labelClassName, textareaClassName } from "@/components/ui";
+import { Button, FormSection, inputClassName, labelClassName, textareaClassName } from "@/components/ui";
 import { createOrder } from "@/app/orders/actions";
 import { todayString } from "@/lib/csv";
+import { SHIPPING_METHODS, SHIPPING_STATUSES } from "@/lib/shipping";
 
 export default async function NewOrderPage({
   searchParams,
@@ -59,6 +60,19 @@ export default async function NewOrderPage({
           </div>
         </FormSection>
 
+        <FormSection title="发货信息" description="新订单默认未发货，可提前填写物流资料；填写资料不会自动改变发货状态。">
+          <div className="business-field-grid">
+            <SelectField label="发货状态" name="shipping_status" defaultValue="未发货" options={SHIPPING_STATUSES} />
+            <SelectField label="物流方式" name="shipping_method" options={SHIPPING_METHODS} emptyLabel="未填写" />
+            <FormField label="物流/快运公司" name="shipping_company" />
+            <FormField label="物流单号/货运单号" name="tracking_no" />
+            <FormField label="发货日期" name="shipping_date" type="date" />
+          </div>
+          <div className="mt-3">
+            <FormField label="发货备注" name="shipping_remark" textarea rows={3} />
+          </div>
+        </FormSection>
+
         <FormSection title="备注">
           <label className={labelClassName}>
             备注
@@ -73,5 +87,31 @@ export default async function NewOrderPage({
         </div>
       </form>
     </AppShell>
+  );
+}
+
+function SelectField({
+  label,
+  name,
+  options,
+  defaultValue,
+  emptyLabel,
+}: {
+  label: string;
+  name: string;
+  options: readonly string[];
+  defaultValue?: string;
+  emptyLabel?: string;
+}) {
+  return (
+    <label className={labelClassName}>
+      {label}
+      <select name={name} defaultValue={defaultValue ?? ""} className={inputClassName}>
+        {emptyLabel ? <option value="">{emptyLabel}</option> : null}
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </label>
   );
 }
