@@ -34,6 +34,139 @@ body {
   background: rgba(37, 99, 235, 0.18);
 }
 
+/* Use available content width, including the space taken by the desktop sidebar. */
+.dashboard-layout {
+  container: dashboard / inline-size;
+}
+
+.dashboard-summary-grid,
+.dashboard-pending-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dashboard-date-form {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 8px;
+}
+
+.dashboard-date-form > label {
+  min-width: 0;
+}
+
+.dashboard-date-actions,
+.list-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-self: end;
+  gap: 8px;
+}
+
+@container dashboard (min-width: 28rem) {
+  .dashboard-summary-grid,
+  .dashboard-pending-grid,
+  .dashboard-date-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-pending-grid > :last-child,
+  .dashboard-date-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@container dashboard (min-width: 34rem) {
+  .dashboard-date-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  }
+
+  .dashboard-date-actions {
+    grid-column: auto;
+  }
+}
+
+@container dashboard (min-width: 46rem) {
+  .dashboard-pending-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-pending-grid > :last-child {
+    grid-column: auto;
+  }
+}
+
+@container dashboard (min-width: 60rem) {
+  .dashboard-summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container dashboard (min-width: 68rem) {
+  .dashboard-date-form {
+    width: auto;
+    flex: 0 1 33rem;
+  }
+}
+
+.list-filter-panel {
+  container: list-filters / inline-size;
+  margin-bottom: 16px;
+}
+
+.list-filter-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.list-filter-form > label {
+  min-width: 0;
+}
+
+.list-filter-actions {
+  grid-column: 1 / -1;
+}
+
+@container list-filters (min-width: 30rem) {
+  .list-filter-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .list-filter-search {
+    grid-column: 1 / -1;
+  }
+}
+
+@container list-filters (min-width: 45rem) {
+  .list-filter-form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container list-filters (min-width: 52rem) {
+  .customer-filter-form {
+    grid-template-columns: minmax(200px, 1.4fr) repeat(3, minmax(112px, 1fr)) auto;
+  }
+
+  .customer-filter-form .list-filter-search,
+  .customer-filter-form .list-filter-actions {
+    grid-column: auto;
+  }
+}
+
+@container list-filters (min-width: 64rem) {
+  .order-filter-form {
+    grid-template-columns: minmax(200px, 1.8fr) repeat(4, minmax(112px, 1fr)) auto;
+  }
+
+  .order-filter-form .list-filter-search,
+  .order-filter-form .list-filter-actions {
+    grid-column: auto;
+  }
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;

@@ -44,15 +44,16 @@ export default async function CustomersPage({
 
   return (
     <AppShell>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <PageHeader title="客户管理" description="客户统计由订单汇总生成；新增订单后会自动刷新，也可以在这里手动重算。" />
-        <div className="flex flex-wrap gap-2">
+      <PageHeader
+        title="客户管理"
+        description="客户统计由订单汇总生成；新增订单后会自动刷新，也可以在这里手动重算。"
+        actions={<>
           <CsvExportButton filenamePrefix="customers" rows={exportRows} label="导出客户 CSV" />
           <form action={refreshCustomerStatsAction}>
             <Button type="submit">刷新客户统计</Button>
           </form>
-        </div>
-      </div>
+        </>}
+      />
       <StatusNote configured={result.configured} error={result.error ?? filterOptions.error ?? recentFollowResult.error} />
       {refreshed ? (
         <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -60,9 +61,9 @@ export default async function CustomersPage({
         </div>
       ) : null}
 
-      <FilterBar>
-      <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto_auto]" action="/customers">
-        <label className={labelClassName}>
+      <FilterBar className="list-filter-panel">
+      <form className="list-filter-form customer-filter-form" action="/customers">
+        <label className={`${labelClassName} list-filter-search`}>
           搜索
           <input
             name="search"
@@ -74,17 +75,19 @@ export default async function CustomersPage({
         <FilterSelect label="跟进优先级" name="followPriority" value={filters.followPriority} options={filterOptions.data.followPriorities} />
         <FilterSelect label="客户价值等级" name="valueLevel" value={filters.valueLevel} options={filterOptions.data.valueLevels} />
         <FilterSelect label="国家/渠道" name="country" value={filters.country} options={filterOptions.data.countries} />
-        <Button type="submit" className="self-end">筛选</Button>
-        <Button href="/customers" variant="secondary" className="self-end">清空</Button>
+        <div className="list-filter-actions">
+          <Button type="submit">筛选</Button>
+          <Button href="/customers" variant="secondary">清空</Button>
+        </div>
       </form>
       </FilterBar>
 
-      <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+      <section className="mb-4 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/70">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">近5日已跟进客户</h2>
           <p className="mt-1 text-sm text-slate-500">展示最近5天内有跟进记录的客户，方便回顾什么时候跟进了谁、跟进状态和内容。</p>
         </div>
-        <div className={`mt-4 ${tableShellClassName}`}>
+        {recentFollowResult.data.length ? <div className={`mt-3 ${tableShellClassName}`}>
           <table className="w-full min-w-[980px] table-fixed text-left text-sm [&_td]:whitespace-nowrap">
             <colgroup>
               <col className="w-[100px]" />
@@ -109,8 +112,7 @@ export default async function CustomersPage({
               </tr>
             </thead>
             <tbody>
-              {recentFollowResult.data.length ? (
-                recentFollowResult.data.map((customer) => (
+              {recentFollowResult.data.map((customer) => (
                   <tr key={customer.id} className={tableRowClassName}>
                     <td className="px-4 py-3">{formatDate(customer.last_follow_date)}</td>
                     <td className="truncate px-4 py-3 font-medium" title={customer.name}>
@@ -127,15 +129,10 @@ export default async function CustomersPage({
                       <CustomerActions id={customer.id} />
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="px-4 py-8 text-slate-500" colSpan={8}>近5日暂无跟进记录</td>
-                </tr>
-              )}
+                ))}
             </tbody>
           </table>
-        </div>
+        </div> : <p className="mt-3 text-sm text-slate-500">近5日暂无跟进记录</p>}
       </section>
 
       <div className={tableShellClassName}>

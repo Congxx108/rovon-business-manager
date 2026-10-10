@@ -77,15 +77,12 @@ export default async function OrdersPage({
         actionLabel="新增订单"
         secondaryActionHref="/orders/import"
         secondaryActionLabel="导入订单"
+        actions={<CsvExportButton filenamePrefix="orders" rows={exportRows} label="导出订单 CSV" />}
       />
       <StatusNote configured={result.configured} error={result.error ?? filterOptions.error} />
-      <div className="mb-4 flex justify-end">
-        <CsvExportButton filenamePrefix="orders" rows={exportRows} label="导出订单 CSV" />
-      </div>
-
-      <FilterBar>
-      <form className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_1fr_auto_auto_auto]" action="/orders">
-        <label className={labelClassName}>
+      <FilterBar className="list-filter-panel">
+      <form className="list-filter-form order-filter-form" action="/orders">
+        <label className={`${labelClassName} list-filter-search`}>
           搜索
           <input
             name="search"
@@ -98,9 +95,11 @@ export default async function OrdersPage({
         <FilterSelect label="产品线" name="productLine" value={filters.productLine} options={filterOptions.data.productLines} />
         <FilterSelect label="月份" name="month" value={filters.month} options={filterOptions.data.months} />
         <FilterSelect label="发货状态" name="shippingStatus" value={filters.shippingStatus} options={filterOptions.data.shippingStatuses} />
-        <Button type="submit" className="self-end">筛选</Button>
-        <Button href="/orders?pendingShipping=1" variant="warning" className="self-end">待发货订单</Button>
-        <Button href="/orders" variant="secondary" className="self-end">清空</Button>
+        <div className="list-filter-actions">
+          <Button type="submit">筛选</Button>
+          <Button href="/orders?pendingShipping=1" variant="warning">待发货订单</Button>
+          <Button href="/orders" variant="secondary">清空</Button>
+        </div>
       </form>
       </FilterBar>
 

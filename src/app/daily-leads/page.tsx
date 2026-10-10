@@ -61,11 +61,9 @@ export default async function DailyLeadsPage({
         description="WhatsApp1～4 是最终有效潜客池；Facebook 为辅助指标，不计入总潜客增加。每天只填写累计数，系统会自动计算每日增加数；换群、历史修正等特殊情况可以在编辑页手动修正增加数。"
         actionHref="/daily-leads/import"
         actionLabel="导入每日统计"
+        actions={<CsvExportButton filenamePrefix="daily-leads" rows={exportRows} label="导出每日潜客 CSV" />}
       />
       <StatusNote configured={result.configured} error={result.error} />
-      <div className="mb-4 flex justify-end">
-        <CsvExportButton filenamePrefix="daily-leads" rows={exportRows} label="导出每日潜客 CSV" />
-      </div>
 
       {params.error ? <Message tone="error" text={params.error} /> : null}
       {params.saved ? <Message tone="success" text="今日潜客数据已保存，系统已重新计算增加数。" /> : null}

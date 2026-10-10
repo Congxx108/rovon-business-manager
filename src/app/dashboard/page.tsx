@@ -33,11 +33,12 @@ export default async function DashboardPage({
 
   return (
     <AppShell>
+      <div className="dashboard-layout">
       <PageHeader title="Dashboard 总览" description="展示有效订单、销售趋势、每日潜客增加趋势和当前需要跟进的客户。" />
       <StatusNote configured={result.configured} error={result.error} />
 
-      <div className="mb-5 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm shadow-slate-200/60">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div className="mb-4 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm shadow-slate-200/60">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="inline-flex flex-wrap gap-1 rounded-2xl bg-slate-100/80 p-1">
             {periods.map((item) => (
               <Link
@@ -65,7 +66,7 @@ export default async function DashboardPage({
             </span>
           </div>
 
-          <form action="/dashboard" className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <form action="/dashboard" className="dashboard-date-form">
             <input type="hidden" name="period" value="custom" />
             <label className="text-xs font-medium text-slate-600">
               开始日期
@@ -74,7 +75,7 @@ export default async function DashboardPage({
                 name="startDate"
                 required
                 defaultValue={isCustom ? data.period.startDate : startDate ?? ""}
-                className={`${inputClassName} mt-1 h-9 min-w-[150px]`}
+                className={`${inputClassName} mt-1 h-9 min-w-0`}
               />
             </label>
             <label className="text-xs font-medium text-slate-600">
@@ -84,11 +85,13 @@ export default async function DashboardPage({
                 name="endDate"
                 required
                 defaultValue={isCustom ? data.period.endDate : endDate ?? ""}
-                className={`${inputClassName} mt-1 h-9 min-w-[150px]`}
+                className={`${inputClassName} mt-1 h-9 min-w-0`}
               />
             </label>
-            <Button type="submit" className="h-9 px-3">应用</Button>
-            <Button href="/dashboard" variant="secondary" className="h-9 px-3">清除</Button>
+            <div className="dashboard-date-actions">
+              <Button type="submit" className="h-9 px-3">应用</Button>
+              <Button href="/dashboard" variant="secondary" className="h-9 px-3">清除</Button>
+            </div>
           </form>
         </div>
         <div className="mt-2 flex flex-col gap-1 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
@@ -97,14 +100,14 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="dashboard-summary-grid grid gap-4">
         <StatCard label="总销售额 RMB" value={formatRmb(data.totalSalesRmb)} hint="已排除取消/退款订单" tone="info" />
         <StatCard label="总订单数" value={formatNumber(data.totalOrders)} hint="已排除取消/退款订单" />
         <StatCard label="总销售数量" value={formatNumber(data.totalQuantity)} hint="订单总数量汇总" />
         <StatCard label="平均订单金额" value={formatRmb(data.averageOrderAmountRmb)} hint="总销售额 / 总订单数" />
       </section>
 
-      <section className="mt-6 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-white to-amber-50 p-5 shadow-sm shadow-amber-100/80">
+      <section className="mt-4 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-white to-amber-50 p-4 shadow-sm shadow-amber-100/80">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold tracking-tight text-amber-950">待发货订单</h2>
@@ -112,7 +115,7 @@ export default async function DashboardPage({
           </div>
           <Button href="/orders?pendingShipping=1" variant="warning">查看全部待发货</Button>
         </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="dashboard-pending-grid mt-4 grid gap-3">
           <StatCard label="待发货订单数量" value={formatNumber(data.pendingShipping.count)} hint="未发货 / 备货中 / 部分发货" tone="warning" />
           <StatCard label="待发货订单总销售额" value={formatRmb(data.pendingShipping.salesTotal)} hint="已排除取消/退款订单" tone="warning" />
           <StatCard label="待发货订单总数量" value={formatNumber(data.pendingShipping.quantityTotal)} hint="待发货订单数量合计" tone="warning" />
@@ -188,11 +191,11 @@ export default async function DashboardPage({
         </div>
       </section>
 
-      <section className="mt-6">
+      <section className="mt-4">
         <DashboardCharts period={data.period} monthlySales={data.monthlySales} countrySales={data.countrySales} recentLeads={data.recentLeads} />
       </section>
 
-      <section className="mt-6 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/70">
+      <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/70">
         <h2 className="text-lg font-semibold tracking-tight">需要跟进客户列表</h2>
         <p className="mt-1 text-sm text-slate-500">此列表不受 Dashboard 时间范围影响，始终显示当前需要跟进的客户。</p>
         <div className={`mt-4 ${tableShellClassName}`}>
@@ -234,6 +237,7 @@ export default async function DashboardPage({
           </table>
         </div>
       </section>
+      </div>
     </AppShell>
   );
 }

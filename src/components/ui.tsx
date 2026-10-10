@@ -117,7 +117,7 @@ export const tableRowClassName = "border-b border-slate-100 align-middle transit
 
 function buttonClassName(variant: NonNullable<ButtonProps["variant"]>) {
   const base =
-    "inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold transition duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white";
+    "inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-4 text-sm font-semibold transition duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white";
   const variants = {
     primary: "bg-[#0f274a] text-white shadow-sm shadow-blue-900/20 hover:bg-[#16365f]",
     secondary: "border border-slate-300 bg-white text-slate-700 shadow-sm shadow-slate-200/50 hover:border-slate-400 hover:bg-slate-50",
