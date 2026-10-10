@@ -137,6 +137,10 @@ body {
   .list-filter-search {
     grid-column: 1 / -1;
   }
+
+  .customer-filter-form .list-filter-actions {
+    grid-column: auto;
+  }
 }
 
 @container list-filters (min-width: 45rem) {
