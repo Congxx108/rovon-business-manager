@@ -76,7 +76,7 @@ export default async function DailyLeadsPage({
           正常情况下只填累计数；总潜客增加、女包群增加数、双肩包群增加数会由系统自动计算。
         </p>
         <form action={quickCreateDailyLead} className="mt-4">
-          <div className="daily-stat-grid">
+          <div className="daily-stat-grid daily-quick-entry-grid">
             <FormField label="日期" name="stat_date" type="date" required defaultValue={params.stat_date ?? todayString()} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={params.whatsapp1 ?? 0} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={params.whatsapp2 ?? 0} />

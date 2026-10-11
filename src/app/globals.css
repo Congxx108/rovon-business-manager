@@ -261,6 +261,18 @@ body {
   }
 }
 
+/* Only the list's quick entry uses one row when eight fields fit comfortably. */
+@container business-form (min-width: 96rem) {
+  .daily-quick-entry-grid {
+    grid-template-columns: minmax(160px, 1.1fr) repeat(4, minmax(120px, 1fr)) minmax(190px, 1.25fr) repeat(2, minmax(120px, 1fr)) max-content;
+    align-items: end;
+  }
+
+  .daily-quick-entry-grid > .daily-facebook-field {
+    grid-column: auto;
+  }
+}
+
 /* Keep table type sizes while making horizontal padding and headers more useful. */
 .business-table th,
 .business-table td {
