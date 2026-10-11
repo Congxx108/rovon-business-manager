@@ -43,7 +43,7 @@ export default async function CustomersPage({
   }));
 
   return (
-    <AppShell>
+    <AppShell wide>
       <PageHeader
         title="客户管理"
         description="客户统计由订单汇总生成；新增订单后会自动刷新，也可以在这里手动重算。"

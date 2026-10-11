@@ -55,7 +55,7 @@ export default async function DailyLeadsPage({
   }));
 
   return (
-    <AppShell>
+    <AppShell wide>
       <PageHeader
         title="每日潜客统计"
         description="WhatsApp1～4 是最终有效潜客池；Facebook 为辅助指标，不计入总潜客增加。每天只填写累计数，系统会自动计算每日增加数；换群、历史修正等特殊情况可以在编辑页手动修正增加数。"
