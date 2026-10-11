@@ -47,7 +47,7 @@ export default async function EditDailyLeadPage({
 
       <form action={saveAction} className="business-form space-y-4">
         <FormSection title="累计字段" description="修改历史记录后，系统会按日期顺序重新计算所有增量。">
-          <div className="daily-stat-grid">
+          <div className="daily-stat-grid daily-edit-cumulative-grid">
             <FormField label="日期" name="stat_date" type="date" required defaultValue={lead.stat_date} />
             <FormField label="WhatsApp1" name="whatsapp1" type="number" required min={0} defaultValue={lead.whatsapp1} />
             <FormField label="WhatsApp2" name="whatsapp2" type="number" required min={0} defaultValue={lead.whatsapp2} />
@@ -63,7 +63,7 @@ export default async function EditDailyLeadPage({
           title="特殊情况 / 手动修正"
           description="正常情况下不用填写手动增加数；只有换群、历史数据修正、WhatsApp2 / WhatsApp3 / WhatsApp4 中途启用等情况，才需要手动覆盖系统计算值。"
         >
-          <div className="business-field-grid">
+          <div className="daily-reset-grid">
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
               <input
                 name="is_handbag_group_reset"
@@ -82,11 +82,13 @@ export default async function EditDailyLeadPage({
               />
               是否双肩包群换群/重置
             </label>
+          </div>
+          <div className="business-field-grid daily-override-grid mt-3">
             <FormField label="手动总潜客增加" name="total_increase_override" type="number" defaultValue={lead.total_increase_override ?? ""} />
             <FormField label="手动女包群增加数" name="handbag_group_increase_override" type="number" defaultValue={lead.handbag_group_increase_override ?? ""} />
             <FormField label="手动双肩包群增加数" name="backpack_group_increase_override" type="number" defaultValue={lead.backpack_group_increase_override ?? ""} />
           </div>
-          <div className="mt-4">
+          <div className="mt-3">
             <FormField label="修正备注" name="increase_note" textarea defaultValue={lead.increase_note ?? ""} />
           </div>
         </FormSection>
