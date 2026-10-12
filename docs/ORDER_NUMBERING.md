@@ -16,9 +16,9 @@
 ## 数据库与上线顺序
 
 1. 备份 orders、order_items、customers、daily_leads、trade_documents、trade_document_versions、trade_document_settings；备份与真实新旧号对照放工作区外私有目录，不提交 Git。
-2. 应用 `20261012100807_monthly_order_numbers.sql`：添加兼容列、counter、aliases 与服务端 RPC/触发器；保留原时间编号规则，兼容新程序的空编号保存。此步不转换历史。
+2. 应用 `20261012102757_monthly_order_numbers.sql`：添加兼容列、counter、aliases 与服务端 RPC/触发器；保留原时间编号规则，兼容新程序的空编号保存。此步不转换历史。
 3. 部署新程序并确认 Vercel Production 成功，确保 CSV 已按新旧 aliases 解析内部 ID/明细。
-4. 应用 `20261012102158_activate_monthly_order_numbers.sql`：在订单表锁与事务内，按订单日期、创建时间、ID 顺序转换历史编号并激活月度取号。只在转换期间暂停 `set_orders_updated_at`，同一事务恢复；订单全部非编号字段/时间戳在提交前逐项检查，否则回滚。
+4. 应用 `20261012104117_activate_monthly_order_numbers.sql`：在订单表锁与事务内，按订单日期、创建时间、ID 顺序转换历史编号并激活月度取号。只在转换期间暂停 `set_orders_updated_at`，同一事务恢复；订单全部非编号字段/时间戳在提交前逐项检查，否则回滚。
 5. 对照迁移前备份验证每个订单 ID/业务字段/时间戳、其他六张业务表与单据/PDF 完整；检查新旧别名、counter 接续、服务端 RPC、权限与线上搜索/筛选/页面。
 
 取号通过单个月份行的 `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` 串行化；手工短号也参与同一月份锁。aliases 使用唯一主键，删除订单只把映射的 order_id 置空，保留号段预留。两张新表启用 RLS，不对 anon/authenticated 开放；新增函数均 SECURITY INVOKER 且固定 search_path，仅服务端 service_role 可执行。
@@ -33,4 +33,8 @@
 
 本地 `test:order-numbering` 覆盖兼容准备、历史转换、字段/时间戳/内部关联、重复执行、换月/换年/补录、固定编辑、旧客户端 upsert、取消/删除不回收、999/1000、手工号/别名冲突、30 个排队并发保存与 service_role 权限；真实新增/编辑/CSV actions 在内存数据库执行。
 
-另用 288 条真实订单备份在离线数据库演练；生产部署与正式域名证据完成后补充。
+另用 288 条真实订单备份在离线数据库演练，17 个月/292 明细/2 单据的全部内部关系与其他业务字段/时间戳不变。
+
+功能提交 `e0e8264` 已在 Vercel Production 成功部署；两阶段迁移已应用，文件版本与 Supabase 历史同步。288 条订单全部转换、576 条新旧映射完整，迁移前后的七张业务表私有备份对照通过，除编号及兼容字段外所有值相同。REST RPC 对全部旧号返回原内部 ID；真实 PostgreSQL 在 service_role 下验证月度接续及 999/1000 后回滚，counter 未增长、未留下测试订单。两张新表与新函数仍仅服务端可用，没有新增安全 WARN/ERROR。
+
+正式域名核验包括：2560px 16 列完整显示、50 行原内容/链接/表头/筛选保持一致、旧号搜索唯一匹配原单、新旧号悬停提示、真实第二页、待发货空状态、375px 全列滚动/无页面横向溢出、14px 正文与 68px/114px 行高，以及无控制台 error/warn。当前无实际待发货订单，没有在线提交发货保存；新增/编辑/导入保存通过隔离的真实 action 集成验证，没有向生产写入测试订单/测试 CSV。

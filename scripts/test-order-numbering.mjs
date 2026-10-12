@@ -34,14 +34,14 @@ await db.exec(`
 const before=(await db.query('select id,to_jsonb(o)-\'order_no\' as data from orders o order by id')).rows;
 const itemBefore=(await db.query('select * from order_items order by id')).rows;
 const documentsBefore=(await db.query('select * from trade_documents order by id')).rows;
-const preparation=await fs.readFile(path.join(root,'supabase/migrations/20261012100807_monthly_order_numbers.sql'),'utf8');
+const preparation=await fs.readFile(path.join(root,'supabase/migrations/20261012102757_monthly_order_numbers.sql'),'utf8');
 await db.exec(preparation);
 assert.deepEqual((await db.query('select id,to_jsonb(o)-\'order_no\'-\'legacy_order_no\' as data from orders o order by id')).rows,before,'preparation does not change business data or existing numbers');
 await db.exec('begin;');
 const staged=(await db.query("insert into orders(order_date,order_no) values('2026-10-12',null) returning order_no")).rows[0];
 assert.match(staged.order_no,/^ROVON-20261012-\d{6}$/,'blank-number create works before activation');
 await db.exec('rollback;');
-const migration=await fs.readFile(path.join(root,'supabase/migrations/20261012102158_activate_monthly_order_numbers.sql'),'utf8');
+const migration=await fs.readFile(path.join(root,'supabase/migrations/20261012104117_activate_monthly_order_numbers.sql'),'utf8');
 await db.exec(migration);
 const after=(await db.query('select id,to_jsonb(o)-\'order_no\'-\'legacy_order_no\' as data from orders o order by id')).rows;
 assert.deepEqual(after,before,'historical conversion must preserve every business field and timestamp');
