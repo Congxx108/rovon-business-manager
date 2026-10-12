@@ -40,7 +40,7 @@ export default async function NewOrderPage({
         <FormSection title="基础信息" description="客户名和联系方式至少填写一个，方便后续客户统计和跟进。">
           <div className="business-field-grid order-basic-grid">
             <FormField label="订单日期" name="order_date" type="date" required defaultValue={todayString()} />
-            <FormField label="订单编号" name="order_no" placeholder="不填则自动生成" />
+            <FormField label="订单编号" name="order_no" placeholder="留空按年月自动编号" />
             <CustomerAutocompleteFields />
           </div>
         </FormSection>

@@ -69,7 +69,7 @@ export default async function OrdersPage({
   };
 
   return (
-    <AppShell wide>
+    <AppShell wide maxWidthClassName="max-w-[2240px]">
       <PageHeader
         title="订单管理"
         description="记录已验证的核心订单字段，销售统计会自动排除取消/退款订单。"
@@ -107,20 +107,20 @@ export default async function OrdersPage({
         <table className="business-table order-list-table w-full table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
             <col className="order-list-action-col" />
-            <col className="w-[104px]" />
-            <col className="w-[208px]" />
-            <col className="w-[160px]" />
-            <col className="w-[152px]" />
+            <col className="w-[112px]" />
+            <col className="w-[128px]" />
+            <col className="w-[184px]" />
+            <col className="w-[168px]" />
             <col className="w-[96px]" />
             <col className="w-[80px]" />
             <col className="w-[72px]" />
             <col className="w-[120px]" />
-            <col className="w-[160px]" />
-            <col className="w-[96px]" />
             <col className="w-[144px]" />
             <col className="w-[96px]" />
+            <col className="w-[144px]" />
+            <col className="w-[80px]" />
             <col className="w-[112px]" />
-            <col className="w-[144px]" />
+            <col className="w-[160px]" />
             <col className="w-[136px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
@@ -174,7 +174,7 @@ export default async function OrdersPage({
                     </div>
                   </td>
                   <td className="px-4 py-3">{formatDate(order.order_date)}</td>
-                  <td className="truncate px-4 py-3 font-medium" title={order.order_no}>{order.order_no}</td>
+                  <td className="truncate px-4 py-3 font-medium" title={order.legacy_order_no ? `${order.order_no}（原编号：${order.legacy_order_no}）` : order.order_no}>{order.order_no}</td>
                   <td className="px-4 py-3" title={order.customer_name ?? ""}>
                     <div className="flex min-w-0 items-center gap-2">
                       <span className="truncate">{order.customer_name}</span>

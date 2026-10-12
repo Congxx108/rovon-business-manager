@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { refreshCustomersFromOrders } from "@/lib/customers";
 import { orderImportSummary, type ParsedOrderImportRow } from "@/lib/imports";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { resolveOrderNumbers } from "@/lib/order-numbers";
 
 export type OrderImportState = {
   ok: boolean;
@@ -20,6 +21,7 @@ export type OrderImportState = {
 
 export type OrderImportPreviewState = {
   existingOrderNos: string[];
+  error?: string;
 };
 
 export async function getOrderImportPreviewAction(orderNos: string[]): Promise<OrderImportPreviewState> {
@@ -27,10 +29,12 @@ export async function getOrderImportPreviewAction(orderNos: string[]): Promise<O
   if (!uniqueOrderNos.length) return { existingOrderNos: [] };
 
   const supabase = getSupabaseAdminClient();
-  const { data, error } = await supabase.from("orders").select("order_no").in("order_no", uniqueOrderNos);
-
-  if (error) return { existingOrderNos: [] };
-  return { existingOrderNos: (data ?? []).map((row) => row.order_no).filter(Boolean) };
+  try {
+    const resolved = await resolveOrderNumbers(supabase, uniqueOrderNos);
+    return { existingOrderNos: Array.from(resolved.keys()) };
+  } catch (error) {
+    return { existingOrderNos: [], error: `订单编号识别失败：${error instanceof Error ? error.message : "未知错误"}` };
+  }
 }
 
 export async function importOrdersAction(_previousState: OrderImportState | null, formData: FormData): Promise<OrderImportState> {
@@ -52,8 +56,18 @@ export async function importOrdersAction(_previousState: OrderImportState | null
   }
 
   const supabase = getSupabaseAdminClient();
+  let resolved: Awaited<ReturnType<typeof resolveOrderNumbers>>;
+  try {
+    resolved = await resolveOrderNumbers(supabase, validRows.map((row) => row.order_no));
+  } catch (error) {
+    return { ok: false, message: `订单编号识别失败：${error instanceof Error ? error.message : "未知错误"}` };
+  }
+  const identities = validRows.map((row) => resolved.get(row.order_no)?.order_id ?? row.order_no);
+  if (new Set(identities).size !== identities.length) {
+    return { ok: false, message: "CSV 中同一订单出现多次（可能同时包含新旧编号），请每个订单只保留一行后再导入。" };
+  }
   const payload = validRows.map((row) => ({
-    order_no: row.order_no,
+    order_no: resolved.get(row.order_no)?.order_no ?? row.order_no,
     order_date: row.order_date,
     customer_name: row.customer_name ?? row.contact ?? "未命名客户",
     contact: row.contact,
@@ -77,18 +91,26 @@ export async function importOrdersAction(_previousState: OrderImportState | null
     remark: row.remark,
   }));
 
-  const { data: upsertedOrders, error } = await supabase.from("orders").upsert(payload, { onConflict: "order_no" }).select("id,order_no");
+  const { error } = await supabase.from("orders").upsert(payload, { onConflict: "order_no" });
   if (error) return { ok: false, message: `订单导入失败：${error.message}` };
 
-  const orderIds = (upsertedOrders ?? []).map((order) => order.id).filter(Boolean);
+  try {
+    resolved = await resolveOrderNumbers(supabase, validRows.map((row) => row.order_no));
+  } catch (error) {
+    return { ok: false, message: `订单已写入，但明细编号识别失败；请修复后重新导入：${error instanceof Error ? error.message : "未知错误"}` };
+  }
+  if (validRows.some((row) => !resolved.has(row.order_no))) {
+    return { ok: false, message: "订单已写入，但部分明细编号未识别，请重新导入。" };
+  }
+
+  const orderIds = Array.from(new Set(validRows.map((row) => resolved.get(row.order_no)!.order_id)));
   if (orderIds.length) {
     const { error: deleteItemsError } = await supabase.from("order_items").delete().in("order_id", orderIds);
     if (deleteItemsError) return { ok: false, message: `订单明细更新失败：${deleteItemsError.message}` };
 
-    const orderIdByNo = new Map((upsertedOrders ?? []).map((order) => [order.order_no, order.id]));
     const itemPayload = validRows
       .map((row) => {
-        const orderId = orderIdByNo.get(row.order_no);
+        const orderId = resolved.get(row.order_no)?.order_id;
         if (!orderId) return null;
         return {
           order_id: orderId,

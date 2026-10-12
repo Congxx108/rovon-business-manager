@@ -3,7 +3,7 @@ import { logoutAction } from "@/app/auth/actions";
 import { MobileNav, SideNav } from "@/components/nav-client";
 import { getCurrentUser } from "@/lib/auth";
 
-export async function AppShell({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
+export async function AppShell({ children, wide = false, maxWidthClassName }: { children: React.ReactNode; wide?: boolean; maxWidthClassName?: string }) {
   const user = await getCurrentUser();
   const email = user?.email ?? "未识别账号";
 
@@ -37,7 +37,7 @@ export async function AppShell({ children, wide = false }: { children: React.Rea
           </div>
           <MobileNav />
         </header>
-        <main className={`mx-auto w-full ${wide ? "max-w-none" : "max-w-[1480px]"} px-4 py-6 md:px-8 md:py-8`}>{children}</main>
+      <main className={`mx-auto w-full ${maxWidthClassName ?? (wide ? "max-w-none" : "max-w-[1480px]")} px-4 py-6 md:px-8 md:py-8`}>{children}</main>
       </div>
     </div>
   );

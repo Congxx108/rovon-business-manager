@@ -1,6 +1,7 @@
 export type Order = {
   id: string;
   order_no: string;
+  legacy_order_no?: string | null;
   order_date: string;
   customer_name: string;
   contact: string | null;

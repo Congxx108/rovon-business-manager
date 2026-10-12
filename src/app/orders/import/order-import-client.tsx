@@ -132,11 +132,12 @@ export function OrderImportClient() {
               estimatedCreates={estimatedCreates}
               estimatedUpdates={estimatedUpdates}
             />
+            {importPreview.error ? <p role="alert" className="mb-3 text-sm text-rose-700">{importPreview.error}</p> : null}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-slate-600">确认后将导入可通过校验的订单行；同订单编号再次导入会更新该订单。</p>
+              <p className="text-sm text-slate-600">确认后将导入可通过校验的订单行；同订单编号或历史旧编号再次导入会更新原订单。</p>
               <button
                 type="submit"
-                disabled={!validRows.length || pending}
+                disabled={!validRows.length || pending || Boolean(importPreview.error)}
                 className="h-10 rounded-lg bg-[#0f274a] px-4 text-sm font-semibold text-white transition hover:bg-[#16365f] disabled:cursor-not-allowed disabled:bg-slate-300"
               >
                 {pending ? "导入中..." : "确认导入订单"}

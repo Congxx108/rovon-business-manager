@@ -32,12 +32,6 @@ function redirectWithEditOrderError(id: string, message: string): never {
   redirect(`/orders/${id}/edit?error=${encodeURIComponent(message)}`);
 }
 
-function generatedOrderNo(orderDate: string | null) {
-  const datePart = (orderDate ?? new Date().toISOString().slice(0, 10)).replaceAll("-", "");
-  const timePart = new Date().toISOString().replace(/\D/g, "").slice(8, 14);
-  return `ROVON-${datePart}-${timePart}`;
-}
-
 function shippingPayload(formData: FormData) {
   const shippingStatus = normalizeShippingStatus(textValue(formData, "shipping_status"));
   return {
@@ -137,7 +131,7 @@ export async function createOrder(formData: FormData) {
   if (payment.deposit_amount_rmb < 0) redirectWithOrderError("定金金额不能小于 0");
 
   const payload = {
-    order_no: textValue(formData, "order_no") ?? generatedOrderNo(orderDate),
+    order_no: textValue(formData, "order_no"),
     order_date: orderDate,
     customer_name: customerName ?? contact,
     contact,
@@ -195,7 +189,7 @@ export async function updateOrder(id: string, formData: FormData) {
   const { error } = await supabase
     .from("orders")
     .update({
-      order_no: textValue(formData, "order_no") ?? generatedOrderNo(orderDate),
+      order_no: textValue(formData, "order_no"),
       order_date: orderDate,
       customer_name: customerName ?? contact,
       contact,

@@ -300,7 +300,7 @@ body {
 
 .order-list-table {
   --order-action-width: 320px;
-  min-width: calc(1880px + var(--order-action-width));
+  min-width: calc(1832px + var(--order-action-width));
 }
 
 .order-list-action-col {
