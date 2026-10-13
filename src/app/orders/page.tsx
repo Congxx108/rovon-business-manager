@@ -115,7 +115,7 @@ export default async function OrdersPage({
             <col className="order-list-action-col" />
             <col className="w-[112px]" />
             <col className="w-[112px]" />
-            <col className="w-[208px]" />
+            <col className="w-[200px]" />
             <col className="w-[192px]" />
             <col className="w-[96px]" />
             <col className="w-[80px]" />
@@ -127,7 +127,7 @@ export default async function OrdersPage({
             <col className="w-[80px]" />
             <col className="w-[112px]" />
             <col className="w-[176px]" />
-            <col className="w-[112px]" />
+            <col className="w-[120px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
