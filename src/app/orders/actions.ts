@@ -146,7 +146,7 @@ export async function createOrder(formData: FormData) {
     remark: textValue(formData, "remark"),
   };
 
-  const { data: insertedOrder, error } = await supabase.from("orders").insert(payload).select("id").single();
+  const { data: insertedOrder, error } = await supabase.from("orders").insert(payload).select("id,order_no").single();
   if (error) redirectWithOrderError(`订单保存失败：${error.message}`);
   if (!insertedOrder?.id) redirectWithOrderError("订单保存失败：未返回订单 ID");
 
@@ -162,10 +162,11 @@ export async function createOrder(formData: FormData) {
   revalidatePath("/customers");
   revalidatePath("/dashboard");
   const warning = needsShippingInfoReminder(shipping.shipping_status, shipping.tracking_no, shipping.shipping_date) ? "&shippingWarning=1" : "";
+  const savedOrderNo = `&savedOrderNo=${encodeURIComponent(insertedOrder.order_no)}`;
   if (textValue(formData, "after_save") === "orders") {
-    redirect(`/orders?saved=1${warning}`);
+    redirect(`/orders?saved=1${savedOrderNo}${warning}`);
   }
-  redirect(`/orders/new?saved=1${warning}`);
+  redirect(`/orders/new?saved=1${savedOrderNo}${warning}`);
 }
 
 export async function updateOrder(id: string, formData: FormData) {

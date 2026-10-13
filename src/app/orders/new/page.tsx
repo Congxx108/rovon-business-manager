@@ -4,15 +4,19 @@ import { CustomerAutocompleteFields, OrderItemsInput, PaymentFields } from "@/co
 import { PageHeader } from "@/components/page-header";
 import { Button, FormSection, inputClassName, labelClassName, textareaClassName } from "@/components/ui";
 import { createOrder } from "@/app/orders/actions";
+import { getOrderNumberPreviewAction } from "@/app/orders/number-preview-action";
+import { OrderNumberFields } from "@/components/order-number-fields";
 import { todayString } from "@/lib/csv";
 import { SHIPPING_METHODS, SHIPPING_STATUSES } from "@/lib/shipping";
 
 export default async function NewOrderPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; saved?: string; shippingWarning?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; shippingWarning?: string; savedOrderNo?: string }>;
 }) {
-  const { error, saved, shippingWarning } = await searchParams;
+  const { error, saved, shippingWarning, savedOrderNo } = await searchParams;
+  const orderDate = todayString();
+  const initialPreview = await getOrderNumberPreviewAction(orderDate);
 
   return (
     <AppShell>
@@ -25,7 +29,7 @@ export default async function NewOrderPage({
       ) : null}
       {saved ? (
         <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
-          <div className="font-medium">保存成功，已刷新客户统计。</div>
+          <div className="font-medium">{savedOrderNo ? `订单 ${savedOrderNo} 保存成功，已刷新客户统计。` : "保存成功，已刷新客户统计。"}</div>
           {shippingWarning ? (
             <div className="mt-2 text-amber-800">已标记发货，建议补充物流方式、单号或发货日期，避免后续混淆。</div>
           ) : null}
@@ -39,8 +43,7 @@ export default async function NewOrderPage({
       <form action={createOrder} className="business-form space-y-4">
         <FormSection title="基础信息" description="客户名和联系方式至少填写一个，方便后续客户统计和跟进。">
           <div className="business-field-grid order-basic-grid">
-            <FormField label="订单日期" name="order_date" type="date" required defaultValue={todayString()} />
-            <FormField label="订单编号" name="order_no" placeholder="留空按年月自动编号" />
+            <OrderNumberFields key={savedOrderNo ?? "new-order"} initialDate={orderDate} initialPreview={initialPreview} />
             <CustomerAutocompleteFields />
           </div>
         </FormSection>

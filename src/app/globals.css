@@ -299,8 +299,27 @@ body {
 }
 
 .order-list-table {
-  --order-action-width: 320px;
-  min-width: calc(1832px + var(--order-action-width));
+  --order-action-width: 312px;
+  --order-payment-width: 128px;
+  min-width: calc(1712px + var(--order-action-width) + var(--order-payment-width));
+}
+
+.order-list-table :is(th, td) {
+  padding-inline: 12px;
+}
+
+/* Group boundaries share the same inset in headers and data cells. */
+.order-list-table :is(th, td):is(:nth-child(4), :nth-child(8), :nth-child(11), :nth-child(13), :nth-child(16)) {
+  padding-left: 20px;
+}
+
+/* Keep a deliberate gap after the right-aligned sales amount. */
+.order-list-table :is(th, td):nth-child(10) {
+  padding-left: 20px;
+}
+
+.order-list-table :is(th, td):nth-child(9) {
+  padding-right: 16px;
 }
 
 .order-list-action-col {

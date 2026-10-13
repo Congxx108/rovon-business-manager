@@ -90,7 +90,7 @@ await db.exec('set role service_role;');assert.equal((await insert('2027-03-01')
 console.log('PASS database: historical business/IDs/timestamps/linked items/documents, month/year rollover, backfill, fixed edits, old-client upserts, non-reuse, 999/1000, explicit numbers, aliases, 30 queued concurrent inserts, service-only privileges.');
 
 // Execute the real import actions against the same isolated database.
-const cache=new Map();let refreshes=0;
+const cache=new Map();let refreshes=0,previewAuthenticated=true,previewReadError=false;
 const client={
  rpc:async(name,args)=>{try {return{data:(await db.query('select * from '+name+'($1)',[args.p_numbers])).rows,error:null};}catch(e){return{data:null,error:{message:e.message}};}},
  from(table){let mode,records,ids,column='order_id',single=false;const builder={
@@ -98,11 +98,17 @@ const client={
   insert(value){mode='insert';records=Array.isArray(value)?value:[value];return builder;},
   update(value){mode='update';records=[value];return builder;},
   delete(){mode='delete';return builder;},
-  in(_column,value){ids=value;return builder;},
+  in(key,value){column=key;ids=value;return builder;},
   eq(key,value){column=key;ids=[value];return builder;},
   select(){return builder;},
   single(){single=true;return builder;},
+  maybeSingle(){single=true;return builder;},
   async then(resolve){try{
+   if(!mode){
+    if(previewReadError)throw new Error('TEST read failure');
+    const result=(await db.query('select * from '+table+' where '+column+'=any($1::text[])',[ids])).rows;
+    return resolve({data:single?result[0]??null:result,error:null});
+   }
    if(mode==='delete'){await db.query('delete from '+table+' where '+column+'=any($1::uuid[])',[ids]);return resolve({data:null,error:null});}
    if(mode==='update'){const record=records[0],keys=Object.keys(record);await db.query('update '+table+' set '+keys.map((k,i)=>k+'=$'+(i+1)).join(',')+' where '+column+'=any($'+(keys.length+1)+'::uuid[])',[...keys.map(k=>record[k]),ids]);return resolve({data:null,error:null});}
    const result=[];
@@ -112,7 +118,7 @@ const client={
  };return builder;}
 };
 function load(relative){if(cache.has(relative))return cache.get(relative);const exports={};cache.set(relative,exports);let output=ts.transpileModule(requireSource(relative),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
- const localRequire=id=>id==='next/cache'?{revalidatePath:()=>{}}:id==='next/navigation'?{redirect:url=>{throw new Error('REDIRECT:'+url);}}:id==='@/lib/customers'?{refreshCustomersFromOrders:async()=>{refreshes++;}}:id==='@/lib/supabase/admin'?{getSupabaseAdminClient:()=>client}:id.startsWith('@/')?load('src/'+id.slice(2)+'.ts'):{};
+ const localRequire=id=>id==='next/cache'?{revalidatePath:()=>{}}:id==='next/navigation'?{redirect:url=>{throw new Error('REDIRECT:'+url);}}:id==='@/lib/auth'?{requireUser:async()=>{if(!previewAuthenticated)throw new Error('REDIRECT:/login');return{id:'TEST user'};}}:id==='@/lib/customers'?{refreshCustomersFromOrders:async()=>{refreshes++;}}:id==='@/lib/supabase/admin'?{getSupabaseAdminClient:()=>client}:id.startsWith('@/')?load('src/'+id.slice(2)+'.ts'):{};
  new Function('require','exports',output)(localRequire,exports);return exports;}
 const sources=new Map();for(const relative of ['src/app/orders/import/actions.ts','src/lib/order-numbers.ts','src/lib/imports.ts','src/lib/csv.ts','src/lib/payment.ts','src/lib/shipping.ts','src/lib/countries.ts','src/lib/country-detection.ts'])sources.set(relative,await fs.readFile(path.join(root,relative),'utf8'));
 function requireSource(relative){return sources.get(relative)??readFileSync(path.join(root,relative),'utf8');}
@@ -143,5 +149,46 @@ const editForm=orderForm();editForm.set('order_date','2026-11-12');
 await assert.rejects(saveActions.updateOrder(created.id,editForm),/REDIRECT:.*saved=1/);
 const edited=(await db.query('select * from orders where id=$1',[created.id])).rows[0];
 assert.equal(edited.order_no,created.order_no);assert.equal(edited.order_date.toISOString().slice(0,10),'2026-11-12');assert.equal(edited.shipping_status,'未发货');assert.equal(edited.tracking_no,'TEST tracking');
-console.log('PASS actual create/edit actions: server leaves allocation to database, original product/payment/pre-entered shipping data save intact; a date edit with omitted number keeps the original number.');
+const previews=load('src/app/orders/number-preview-action.ts');
+const snapshot=async()=>({counters:(await db.query('select * from order_number_counters order by period')).rows,aliases:(await db.query('select * from order_number_aliases order by order_no')).rows,orders:(await db.query('select * from orders order by id')).rows});
+const previewBefore=await snapshot();
+const firstPreview=await previews.getOrderNumberPreviewAction('2026-10-13');
+assert.match(firstPreview.orderNo,/^R2610-\d{3,}$/);
+assert.deepEqual(await previews.getOrderNumberPreviewAction('2026-10-14'),firstPreview,'same month shares preview');
+assert.equal((await previews.getOrderNumberPreviewAction('2028-11-01')).orderNo,'R2811-001');
+assert.equal((await previews.getOrderNumberPreviewAction('2028-01-01')).orderNo,'R2801-001');
+assert.match((await previews.getOrderNumberPreviewAction('2025-06-12')).orderNo,/^R2506-/);
+for(const invalid of ['', 'bad', '2026-02-30', '2026-13-01'])assert.equal((await previews.getOrderNumberPreviewAction(invalid)).orderNo,null);
+previewReadError=true;
+assert.equal((await previews.getOrderNumberPreviewAction('2026-10-13')).orderNo,null,'read failure permits save-time allocation');
+previewReadError=false;
+previewAuthenticated=false;
+await assert.rejects(previews.getOrderNumberPreviewAction('2026-10-13'),/REDIRECT:\/login/);
+previewAuthenticated=true;
+assert.deepEqual(await snapshot(),previewBefore,'opening, revisiting, changing dates and failed/unauthenticated previews never write or consume a number');
+
+// Two forms may display the same estimate; only the database chooses their final numbers.
+const secondPreview=await previews.getOrderNumberPreviewAction('2026-10-13');
+assert.deepEqual(firstPreview,secondPreview);
+const redirects=[];
+for(let i=0;i<2;i++){
+ const f=orderForm();f.set('customer_name','TEST preview tab '+i);f.set('order_date','2026-10-13');f.set('after_save',i?'new':'orders');
+ try{await saveActions.createOrder(f);}catch(error){assert.match(error.message,/REDIRECT:.*savedOrderNo=/);redirects.push(error.message);}
+}
+const tabOrders=(await db.query("select * from orders where customer_name like 'TEST preview tab %' order by customer_name")).rows;
+assert.equal(tabOrders[0].order_no,firstPreview.orderNo);
+assert.notEqual(tabOrders[0].order_no,tabOrders[1].order_no);
+tabOrders.forEach((o,i)=>assert.ok(redirects[i].includes('savedOrderNo='+encodeURIComponent(o.order_no)),'success message must show actual saved number'));
+const continuePreview=await previews.getOrderNumberPreviewAction('2026-10-13');
+assert.notEqual(continuePreview.orderNo,tabOrders[1].order_no);
+const manual=orderForm();manual.set('order_no','CUSTOM-PREVIEW-TEST');manual.set('customer_name','TEST manual preview');
+await assert.rejects(saveActions.createOrder(manual),/savedOrderNo=CUSTOM-PREVIEW-TEST/);
+assert.equal((await db.query("select order_no from orders where customer_name='TEST manual preview'")).rows[0].order_no,'CUSTOM-PREVIEW-TEST');
+await db.query("insert into order_number_counters(period,last_value) values('2912',999)");
+assert.equal((await previews.getOrderNumberPreviewAction('2029-12-01')).orderNo,'R2912-1000');
+await db.query("insert into order_number_aliases(order_no,order_id) values('R2911-001',null)");
+const reservedBefore=await snapshot();
+assert.equal((await previews.getOrderNumberPreviewAction('2029-11-01')).orderNo,'R2911-002','deleted/reserved aliases are skipped without consuming numbers');
+assert.deepEqual(await snapshot(),reservedBefore);
+console.log('PASS actual create/edit and preview actions: read-only authenticated previews, invalid dates/read failures, month/year/backfill, 999/1000, reserved aliases, two identical estimates save as distinct final numbers, actual-number success messages, manual numbers and save-and-continue; original items/payment/pre-entered shipment data remain intact.');
 await db.close();

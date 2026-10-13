@@ -9,6 +9,7 @@ import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 import { getOrderFilterOptions, getOrders } from "@/lib/data";
 import { isPendingShippingStatus } from "@/lib/shipping";
 import { formatPaymentCurrency } from "@/lib/payment";
+import type { CSSProperties } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,9 +24,10 @@ export default async function OrdersPage({
     pendingShipping?: string;
     search?: string;
     page?: string;
+    savedOrderNo?: string;
   }>;
 }) {
-  const { page, ...filters } = await searchParams;
+  const { page, savedOrderNo, ...filters } = await searchParams;
   const pageSize = 50;
   const currentPage = Math.max(1, Number(page ?? "1") || 1);
   const offset = (currentPage - 1) * pageSize;
@@ -35,6 +37,8 @@ export default async function OrdersPage({
     getOrders({}, 10000),
   ]);
   const repeatOrderIds = buildRepeatOrderIds(exportResult.data);
+  const paymentTextUnits = Math.max(8, ...result.data.map((order) => [...paymentLabel(order.payment_status, Number(order.deposit_amount_rmb ?? 0))].reduce((units, character) => units + (character.charCodeAt(0) > 127 ? 2 : 1), 0)));
+  const paymentWidth = `max(128px, calc(${paymentTextUnits}ch + 32px))`;
   const exportRows = exportResult.data.map((order) => ({
     订单日期: order.order_date,
     订单编号: order.order_no,
@@ -81,6 +85,7 @@ export default async function OrdersPage({
         actions={<CsvExportButton filenamePrefix="orders" rows={exportRows} label="导出订单 CSV" />}
       />
       <StatusNote configured={result.configured} error={result.error ?? filterOptions.error} />
+      {savedOrderNo ? <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">订单 {savedOrderNo} 保存成功，已刷新客户统计。</div> : null}
       <FilterBar className="list-filter-panel">
       <form className="list-filter-form order-filter-form" action="/orders">
         <label className={`${labelClassName} list-filter-search`}>
@@ -105,24 +110,24 @@ export default async function OrdersPage({
       </FilterBar>
 
       <div className={`${tableShellClassName} order-list-shell`}>
-        <table className="business-table order-list-table w-full table-fixed text-left text-sm [&_td]:whitespace-nowrap">
+        <table style={{ "--order-payment-width": paymentWidth } as CSSProperties} className="business-table order-list-table w-full table-fixed text-left text-sm [&_td]:whitespace-nowrap">
           <colgroup>
             <col className="order-list-action-col" />
             <col className="w-[112px]" />
-            <col className="w-[128px]" />
-            <col className="w-[184px]" />
-            <col className="w-[168px]" />
+            <col className="w-[112px]" />
+            <col className="w-[208px]" />
+            <col className="w-[192px]" />
             <col className="w-[96px]" />
             <col className="w-[80px]" />
             <col className="w-[72px]" />
             <col className="w-[120px]" />
-            <col className="w-[144px]" />
+            <col style={{ width: "var(--order-payment-width)" }} />
             <col className="w-[96px]" />
             <col className="w-[144px]" />
             <col className="w-[80px]" />
             <col className="w-[112px]" />
-            <col className="w-[160px]" />
-            <col className="w-[136px]" />
+            <col className="w-[176px]" />
+            <col className="w-[112px]" />
           </colgroup>
           <thead className={tableHeadClassName}>
             <tr>
@@ -264,8 +269,12 @@ function FilterSelect({
   );
 }
 
+function paymentLabel(status: string, depositAmount: number) {
+  return status === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
+}
+
 function PaymentSummary({ status, depositAmount, currency }: { status: string; depositAmount: number; currency?: string | null }) {
-  const label = status === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
+  const label = paymentLabel(status, depositAmount);
   const currencyLabel = formatPaymentCurrency(currency);
   return (
     <div className="order-list-payment" title={currencyLabel ? `${label} / ${currencyLabel}` : label}>
