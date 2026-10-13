@@ -8,6 +8,7 @@ import { ShippingStatusBadge } from "@/components/shipping-status-badge";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
 import { getOrderFilterOptions, getOrders } from "@/lib/data";
 import { isPendingShippingStatus } from "@/lib/shipping";
+import { formatPaymentCurrency } from "@/lib/payment";
 
 export const dynamic = "force-dynamic";
 
@@ -265,10 +266,11 @@ function FilterSelect({
 
 function PaymentSummary({ status, depositAmount, currency }: { status: string; depositAmount: number; currency?: string | null }) {
   const label = status === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
+  const currencyLabel = formatPaymentCurrency(currency);
   return (
-    <div className="order-list-payment" title={currency ? `${label} / ${currency}` : label}>
+    <div className="order-list-payment" title={currencyLabel ? `${label} / ${currencyLabel}` : label}>
       <div>{label}</div>
-      <div className="text-slate-500">{currency || "\u00a0"}</div>
+      <div className="text-slate-500">{currencyLabel || "\u00a0"}</div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { StatusNote } from "@/components/status-note";
 import { Badge, Button, EmptyState, tableHeadClassName, tableRowClassName, tableShellClassName } from "@/components/ui";
 import { getCustomerById, getOrdersForCustomer } from "@/lib/data";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
+import { formatPaymentCurrency } from "@/lib/payment";
 
 export const dynamic = "force-dynamic";
 
@@ -154,6 +155,6 @@ function InfoPanel({ title, items }: { title: string; items: Array<[string, stri
 
 function formatPaymentStatus(paymentStatus: string, depositAmount: number, paymentCurrency?: string | null) {
   const status = paymentStatus === "定金" ? `定金 ${depositAmount > 0 ? formatRmb(depositAmount) : ""}`.trim() : "已付全款";
-  return paymentCurrency ? `${status} / ${paymentCurrency}` : status;
+  return paymentCurrency ? `${status} / ${formatPaymentCurrency(paymentCurrency)}` : status;
 }
 

@@ -6,7 +6,7 @@ import { searchOrderCustomers, type OrderCustomerSuggestion } from "@/app/orders
 import { Button, inputClassName, labelClassName, tableHeadClassName, tableRowClassName, textareaClassName } from "@/components/ui";
 import { detectCountryFromContact } from "@/lib/country-detection";
 import { formatDate, formatNumber, formatRmb } from "@/lib/format";
-import { PAYMENT_CURRENCIES, RMB_PAYMENT_METHODS, suggestPaymentCurrency } from "@/lib/payment";
+import { PAYMENT_CURRENCIES, RMB_PAYMENT_METHODS, formatPaymentCurrency, suggestPaymentCurrency } from "@/lib/payment";
 import type { OrderItem } from "@/lib/types";
 
 const productLineOptions = ["女包", "书包", "男包", "混合", "其他"];
@@ -415,7 +415,7 @@ export function PaymentFields({
           <option value="">未填写</option>
           {PAYMENT_CURRENCIES.map((currency) => (
             <option key={currency} value={currency}>
-              {currency}
+              {formatPaymentCurrency(currency)}
             </option>
           ))}
         </select>

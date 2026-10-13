@@ -2,6 +2,12 @@ export const PAYMENT_CURRENCIES = ["RMB", "USD", "Naira", "Cedis", "TZS", "KES",
 
 export const RMB_PAYMENT_METHODS = ["支付宝", "微信", "银行转账", "现金", "其他"] as const;
 
+export function formatPaymentCurrency(currency: string | null | undefined) {
+  if (currency === "Cedis") return "GHS";
+  if (currency === "Naira") return "NGN";
+  return currency ?? "";
+}
+
 export function suggestPaymentCurrency(countryOrChannel: string | null | undefined) {
   const value = countryOrChannel?.trim() ?? "";
   if (!value) return "";
