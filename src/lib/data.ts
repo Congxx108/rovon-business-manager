@@ -63,13 +63,14 @@ export async function getOrders(filters: OrderFilters = {}, limit = 200, offset 
     query = query.gte("order_date", `${month}-01`).lt("order_date", nextMonth(month));
   }
   if (search) {
-    const escaped = escapeLike(search);
+    const escaped = search.replace(/[\\%_]/g, (match) => `\\${match}`);
     const { data: aliases, error: aliasError } = await supabase.from("order_number_aliases")
       .select("order_id").ilike("order_no", `%${escaped}%`).not("order_id", "is", null);
     if (aliasError) return emptyResult([], aliasError.message);
     const aliasIds = Array.from(new Set((aliases ?? []).map((alias) => alias.order_id).filter(Boolean)));
     const aliasFilter = aliasIds.length ? `,id.in.(${aliasIds.join(",")})` : "";
-    query = query.or(`customer_name.ilike.%${escaped}%,contact.ilike.%${escaped}%,order_no.ilike.%${escaped}%,legacy_order_no.ilike.%${escaped}%${aliasFilter}`);
+    const pattern = `"%${escaped.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}%"`;
+    query = query.or(`customer_name.ilike.${pattern},contact.ilike.${pattern},order_no.ilike.${pattern},legacy_order_no.ilike.${pattern},tracking_no.ilike.${pattern}${aliasFilter}`);
   }
 
   const { data, error } = await query;

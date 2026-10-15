@@ -31,6 +31,10 @@ export default async function OrdersPage({
   const pageSize = 50;
   const currentPage = Math.max(1, Number(page ?? "1") || 1);
   const offset = (currentPage - 1) * pageSize;
+  const search = filters.search?.trim();
+  const hasOtherFilters = [filters.country, filters.productLine, filters.month, filters.shippingStatus, filters.pendingShipping].some((value) => value?.trim());
+  const hasFilters = Boolean(search || hasOtherFilters);
+  const searchOnlyHref = `/orders?${new URLSearchParams({ search: search ?? "" })}`;
   const [result, filterOptions, exportResult] = await Promise.all([
     getOrders(filters, pageSize, offset),
     getOrderFilterOptions(),
@@ -93,7 +97,7 @@ export default async function OrdersPage({
           <input
             name="search"
             defaultValue={filters.search ?? ""}
-            placeholder="客户名 / 联系方式 / 订单编号"
+            placeholder="客户名 / 联系方式 / 订单编号 / 物流或货运单号"
             className={inputClassName}
           />
         </label>
@@ -212,7 +216,16 @@ export default async function OrdersPage({
               })
             ) : (
               <tr>
-                <td className="px-4 py-8 text-slate-500" colSpan={16}>暂无订单数据，请先新增订单或导入历史订单</td>
+                <td className="px-4 py-8 text-slate-500" colSpan={16}>
+                  {!result.configured || result.error ? "订单数据暂时无法加载，请查看上方提示" : (
+                    <div className="flex flex-col items-start gap-3">
+                      <span>{hasFilters ? "未找到符合条件的订单" : "暂无订单数据，请先新增订单或导入历史订单"}</span>
+                      {search && hasOtherFilters ? (
+                        <Button href={searchOnlyHref} variant="secondary">清除其他筛选，按当前关键词重查</Button>
+                      ) : null}
+                    </div>
+                  )}
+                </td>
               </tr>
             )}
           </tbody>
